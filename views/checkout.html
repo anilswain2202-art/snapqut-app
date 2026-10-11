@@ -1,0 +1,406 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Get SnapQut</title>
+<meta name="description" content="Get SnapQut for Claude. Enter your email and we'll send your access key after payment.">
+<link rel="icon" type="image/png" href="/assets/favicon.png">
+<link rel="stylesheet" href="/assets/blog.css">
+<style>
+/* Checkout: order summary on the left, the email step on the right */
+.co { position: relative; overflow: hidden; padding-block: 56px 0; }
+.co::before { content: ""; position: absolute; top: -300px; left: 50%; width: 1100px; height: 700px; transform: translateX(-50%); background: radial-gradient(closest-side, rgba(124, 58, 237, .26), transparent 72%); pointer-events: none; }
+.co .wrap { position: relative; max-width: 1040px; }
+.co-head { display: grid; justify-items: center; gap: 14px; text-align: center; margin-bottom: 36px; }
+.co-head h1 { font-size: clamp(2.2rem, 4.6vw, 3.1rem); line-height: 1.08; }
+.co-head p { color: var(--muted); font-size: 17px; max-width: 520px; }
+
+.stepper { display: flex; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap; margin-bottom: 32px; list-style: none; padding: 0; }
+.stepper li { display: inline-flex; align-items: center; gap: 8px; color: var(--faint); font-size: 14px; font-weight: 600; }
+.stepper li .n { width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; font-size: 12px; border: 1px solid var(--border-strong); }
+.stepper li.on { color: #fff; }
+.stepper li.on .n { background: var(--violet); border-color: var(--violet); box-shadow: 0 0 16px rgba(139, 92, 246, .6); }
+.stepper li.done .n { background: rgba(74, 222, 128, .15); border-color: rgba(74, 222, 128, .5); color: #4ade80; }
+.stepper .sep { width: 36px; height: 1px; background: var(--border-strong); }
+
+.co-grid { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: 20px; align-items: start; }
+@media (max-width: 860px) { .co-grid { grid-template-columns: 1fr; } .summary { order: 2; } }
+
+.summary { border-radius: 20px; background: var(--card); border: 1px solid var(--border); padding: 28px; display: grid; gap: 20px; }
+.sum-top { display: flex; align-items: center; gap: 14px; }
+.sum-top img { width: 52px; height: auto; }
+.sum-top b { display: block; font-size: 17px; }
+.sum-top small { color: var(--muted); font-size: 13px; }
+.sum-price { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; padding-block: 16px; border-block: 1px solid var(--border); }
+.sum-price b { font-size: 44px; letter-spacing: -0.03em; line-height: 1; }
+.sum-price s { color: var(--faint); font-size: 18px; }
+.sum-price span { color: var(--muted); font-size: 14px; }
+.coupon-line { display: flex; justify-content: space-between; gap: 10px; padding: 10px 12px; border-radius: 10px; background: rgba(74, 222, 128, .08); border: 1px solid rgba(74, 222, 128, .3); color: #bbf7d0; font-size: 14px; }
+.coupon { display: grid; gap: 8px; }
+.coupon-toggle { justify-self: start; background: none; border: 0; padding: 0; color: var(--violet-text); font: 500 14px var(--font); cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }
+.coupon-row { display: flex; gap: 8px; }
+.coupon-row input { flex: 1; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--border-strong); background: var(--panel); color: #fff; font: 600 15px/1.3 var(--mono); text-transform: uppercase; letter-spacing: .06em; }
+.coupon-row input:focus { outline: none; border-color: var(--violet); }
+.coupon-row button { padding: 0 18px; border-radius: 12px; border: 1px solid var(--border-strong); background: rgba(255, 255, 255, .06); color: #fff; font: 600 14px var(--font); cursor: pointer; }
+.coupon-ok { color: #4ade80; font-size: 13.5px; display: flex; justify-content: space-between; gap: 8px; }
+.coupon-ok button { background: none; border: 0; color: var(--muted); cursor: pointer; text-decoration: underline; font: 13px var(--font); }
+.hot { justify-self: start; font-size: 12.5px; font-weight: 600; padding: 6px 11px; border-radius: 999px; background: rgba(250, 204, 21, .12); color: var(--caption); }
+.incl { list-style: none; margin: 0; padding: 0; display: grid; gap: 11px; font-size: 14.5px; color: rgba(255, 255, 255, .85); }
+.incl li { display: flex; gap: 10px; }
+.incl li::before { content: "✓"; flex: none; width: 18px; height: 18px; border-radius: 5px; display: grid; place-items: center; font-size: 11px; font-weight: 700; background: rgba(139, 92, 246, .2); color: var(--violet-text); margin-top: 1px; }
+.trust { display: grid; gap: 8px; color: var(--faint); font-size: 13px; }
+.trust span { display: flex; gap: 8px; align-items: center; }
+.trust svg { width: 15px; height: 15px; color: var(--violet-text); flex: none; }
+
+.panel { position: relative; border-radius: 22px; padding: 1.5px; background: linear-gradient(140deg, rgba(139, 92, 246, .9), rgba(45, 212, 191, .45) 50%, rgba(139, 92, 246, .35)); box-shadow: 0 0 80px -25px rgba(139, 92, 246, .7); }
+.panel-inner { border-radius: 20.5px; background: #0e0d1a; padding: 32px; display: grid; gap: 22px; }
+.panel h2 { font-size: 1.6rem; }
+.panel .sub { color: var(--muted); font-size: 15px; margin-top: -10px; }
+.field { display: grid; gap: 8px; }
+.field label { font-size: 14px; font-weight: 600; }
+.field label small { color: var(--faint); font-weight: 400; }
+.field input { width: 100%; padding: 14px 16px; border-radius: 12px; border: 1px solid var(--border-strong); background: var(--panel); color: #fff; font: 16px/1.3 var(--font); transition: border-color .2s ease, box-shadow .2s ease; }
+.field input::placeholder { color: rgba(255, 255, 255, .3); }
+.field input:focus { outline: none; border-color: var(--violet); box-shadow: 0 0 0 4px rgba(139, 92, 246, .2); }
+.field input[aria-invalid="true"] { border-color: #f87171; }
+.err { color: #fca5a5; font-size: 13px; min-height: 1em; }
+.agree { display: flex; gap: 10px; align-items: flex-start; font-size: 13.5px; color: var(--muted); cursor: pointer; }
+.agree input { margin-top: 3px; accent-color: var(--violet); width: 16px; height: 16px; flex: none; }
+.agree a { color: var(--violet-text); text-decoration: underline; text-underline-offset: 2px; }
+.panel .btn-lg { width: 100%; padding-block: 17px; font-size: 16.5px; }
+.btn[disabled] { opacity: .55; cursor: not-allowed; box-shadow: none; }
+.note { color: var(--faint); font-size: 13px; text-align: center; }
+
+.next { display: grid; gap: 14px; padding: 18px; border-radius: 14px; background: rgba(255, 255, 255, .03); border: 1px solid var(--border); }
+.next b { font-size: 13px; letter-spacing: .14em; text-transform: uppercase; color: var(--faint); }
+.next ol { margin: 0; padding-left: 1.2em; display: grid; gap: 8px; color: rgba(255, 255, 255, .82); font-size: 14.5px; }
+.next li::marker { color: var(--violet-text); font-weight: 700; }
+
+.sent { display: flex; gap: 12px; align-items: center; padding: 14px 16px; border-radius: 12px; background: rgba(74, 222, 128, .08); border: 1px solid rgba(74, 222, 128, .35); font-size: 14.5px; }
+.sent svg { width: 20px; height: 20px; color: #4ade80; flex: none; }
+.sent b { color: #fff; word-break: break-all; }
+.testmode { padding: 12px 14px; border-radius: 12px; background: rgba(250, 204, 21, .08); border: 1px solid rgba(250, 204, 21, .35); color: #fde68a; font-size: 13.5px; line-height: 1.5; }
+.link-btn { background: none; border: 0; padding: 0; color: var(--violet-text); font: 500 14px var(--font); cursor: pointer; text-decoration: underline; text-underline-offset: 2px; justify-self: center; }
+.spinner { width: 18px; height: 18px; border-radius: 50%; border: 2px solid rgba(255, 255, 255, .35); border-top-color: #fff; animation: spin .8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.done-icon { width: 56px; height: 56px; border-radius: 50%; display: grid; place-items: center; background: rgba(74, 222, 128, .14); border: 1px solid rgba(74, 222, 128, .45); color: #4ade80; }
+.done-icon svg { width: 28px; height: 28px; }
+.keybox { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 16px 18px; border-radius: 14px; background: #120f22; border: 1px solid rgba(139, 92, 246, .5); box-shadow: 0 0 30px -10px rgba(139, 92, 246, .6); }
+.keybox code { font: 700 clamp(15px, 3.4vw, 20px)/1.2 var(--mono); letter-spacing: .08em; color: #fff; word-break: break-all; user-select: all; }
+.keybox small { display: block; color: var(--violet-text); font-size: 10.5px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; margin-bottom: 6px; }
+.copy { flex: none; cursor: pointer; padding: 9px 14px; border-radius: 10px; border: 1px solid var(--border-strong); background: rgba(255, 255, 255, .06); color: #fff; font: 600 13px var(--font); }
+.copy:hover { border-color: var(--violet); }
+.warn { padding: 12px 14px; border-radius: 12px; background: rgba(248, 113, 113, .08); border: 1px solid rgba(248, 113, 113, .35); color: #fecaca; font-size: 13.5px; line-height: 1.5; }
+.ref { color: var(--faint); font-size: 13px; }
+</style>
+{{{razorpayScript}}}
+</head>
+<body>
+<header class="nav">
+  <div class="wrap">
+    <a class="nav-logo" href="/" aria-label="SnapQut home"><img src="/assets/logo-light.png" alt="SnapQut" width="640" height="162"></a>
+    <nav class="nav-links" aria-label="Site">
+      <a href="/#examples">Examples</a>
+      <a href="/#features">Features</a>
+      <a href="/#how">How it works</a>
+      <a href="/#pricing">Pricing</a>
+      <a href="/blog">Blog</a>
+    </nav>
+  </div>
+</header>
+
+<main class="co">
+  <div class="wrap">
+    <div class="co-head">
+      <span class="eyebrow">✦ Get SnapQut ✦</span>
+      <h1>Where should we send <span class="violet">your access key?</span></h1>
+      <p>Enter your email, complete the one-time payment, and your SnapQut key lands in your inbox.</p>
+    </div>
+
+    <ol class="stepper" aria-label="Checkout steps">
+      <li class="on" id="st1"><span class="n">1</span>Your email</li>
+      <li class="sep" aria-hidden="true"></li>
+      <li id="st2"><span class="n">2</span>Payment</li>
+      <li class="sep" aria-hidden="true"></li>
+      <li id="st3"><span class="n">3</span>Key in your inbox</li>
+    </ol>
+
+    <div class="co-grid">
+      <aside class="summary" aria-label="Order summary">
+        <div class="sum-top"><img src="/assets/icon.png" alt="" width="256" height="239"><div><b>SnapQut for Claude</b><small>Lifetime licence · 1 user</small></div></div>
+        <div class="sum-price"><b id="sumPrice">{{price}}</b><s id="sumWas">{{comparePrice}}</s><span>one-time payment</span></div>
+        <div class="coupon-line" id="sumCoupon" hidden></div>
+        <span class="hot">{{priceNotice}}</span>
+        <ul class="incl">
+          <li>Every built-in video workflow</li>
+          <li>Style-learning from 3 to 6 reference videos</li>
+          <li>Long-form editing</li>
+          <li>Ad formats: PAS, AIDA, Before-After-Bridge, UGC</li>
+          <li>Unlimited videos, no per-render charge</li>
+        </ul>
+        <div class="trust">
+          <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>Secure checkout with Razorpay (PCI-DSS compliant)</span>
+          <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Refund and licence questions answered by a real person</span>
+        </div>
+      </aside>
+
+      <div class="panel">
+        <!-- Step 1: email -->
+        <form class="panel-inner" id="emailForm" novalidate>
+          <div>
+            <h2>Your details</h2>
+          </div>
+          <p class="sub">We'll send your access key and setup guide to this email.</p>
+          <div class="field">
+            <label for="name">Name <small>(optional)</small></label>
+            <input id="name" name="name" type="text" autocomplete="name" placeholder="Your name">
+          </div>
+          <div class="field">
+            <label for="email">Email</label>
+            <input id="email" name="email" type="email" autocomplete="email" inputmode="email" placeholder="you@example.com" required aria-describedby="emailErr">
+            <span class="err" id="emailErr" role="alert"></span>
+          </div>
+          <div class="field">
+            <label for="email2">Confirm email</label>
+            <input id="email2" name="email2" type="email" autocomplete="email" inputmode="email" placeholder="Type it again" required aria-describedby="email2Err">
+            <span class="err" id="email2Err" role="alert"></span>
+          </div>
+          <div class="field" id="phoneField" hidden>
+            <label for="phone">Mobile number <small>(needed by the payment provider)</small></label>
+            <input id="phone" name="phone" type="tel" autocomplete="tel-national" inputmode="numeric" placeholder="98765 43210" maxlength="14" aria-describedby="phoneErr">
+            <span class="err" id="phoneErr" role="alert"></span>
+          </div>
+          <div class="coupon" id="couponBox">
+            <button class="coupon-toggle" type="button" id="couponToggle">Have a discount code?</button>
+            <div class="coupon-row" id="couponRow" hidden><input id="couponInput" autocomplete="off" spellcheck="false" maxlength="30" placeholder="CODE" aria-label="Discount code"><button type="button" id="couponApply">Apply</button></div>
+            <div class="coupon-ok" id="couponOk" hidden><span id="couponMsg"></span><button type="button" id="couponRemove">Remove</button></div>
+            <span class="err" id="couponErr" role="alert"></span>
+          </div>
+          <label class="agree" for="agree"><input id="agree" type="checkbox" required>I agree to the <a href="/terms" target="_blank">terms</a> and <a href="/refund-policy" target="_blank">refund policy</a>.</label>
+          <span class="err" id="agreeErr" role="alert"></span>
+          <button class="btn btn-lg" type="submit" id="continueBtn"><span class="spark">✦</span> <span id="payLabel">Continue to payment · {{price}}</span></button>
+          <p class="note">Your key is sent only to this email. Check spam if you don't see it.</p>
+          <div class="next">
+            <b>What happens next</b>
+            <ol>
+              <li>Pay securely with Razorpay (cards, UPI or netbanking).</li>
+              <li>We email your SnapQut access key to the address above.</li>
+              <li>Install SnapQut, connect it to Claude and make your first video.</li>
+            </ol>
+          </div>
+        </form>
+
+        <!-- Step 2 (test mode only): simulate a payment -->
+        <div class="panel-inner" id="payStep" hidden>
+          <div class="sent"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5L20 7"/></svg><span>Your key will be sent to <b id="emailShow"></b></span></div>
+          <div class="testmode">Test mode: Razorpay isn't connected yet, so no real payment is taken. Use the button below to try the full flow.</div>
+          <h2>Complete your payment</h2>
+          <button class="btn btn-lg" type="button" id="simulateBtn"><span class="spark">✦</span> Simulate successful payment</button>
+          <button class="link-btn" type="button" id="changeEmail">Use a different email</button>
+        </div>
+
+        <!-- Step 3: done -->
+        <div class="panel-inner" id="doneStep" hidden>
+          <span class="done-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5L20 7"/></svg></span>
+          <h2>Payment received. You're in!</h2>
+          <p class="sub" id="doneMsg"></p>
+          <div class="keybox"><div><small>Your access key</small><code id="keyShow"></code></div><button class="copy" type="button" id="copyKey">Copy</button></div>
+          <a class="btn btn-lg" id="dlLink" href="/download"><span class="spark">✦</span> Download SnapQut</a>
+          <div class="warn" id="mailWarn" hidden></div>
+          <div class="next">
+            <b>What to do now</b>
+            <ol>
+              <li>Click Download SnapQut above and unzip the file into a folder.</li>
+              <li>Open Claude (Claude Code works best) and choose that folder.</li>
+              <li>Attach a raw video and describe it in one sentence.</li>
+            </ol>
+          </div>
+          <p class="ref" id="refShow"></p>
+          <a class="link-btn" href="/blog/one-sentence-reel">Read the quick-start guide →</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer class="wrap">
+  <div class="footer-box">
+    <div class="footer-grid">
+      <div><img src="/assets/logo-light.png" alt="SnapQut" width="640" height="162"><p>The video editing skill for Claude. Turn raw footage into finished videos with one sentence.</p></div>
+      <div class="fcol"><b>Product</b><a href="/#features">Features</a><a href="/#how">How it works</a><a href="/#pricing">Pricing</a><a href="/blog">Blog</a></div>
+      <div class="fcol"><b>Support</b><span>Email: <span class="sel">{{supportEmail}}</span></span><span>WhatsApp: <span class="sel">{{whatsapp}}</span></span><a href="/#faq">FAQ</a></div>
+      <div class="fcol"><b>Legal</b><a href="/privacy">Privacy policy</a><a href="/terms">Terms of service</a><a href="/refund-policy">Refund &amp; cancellation</a><a href="/shipping-policy">Shipping &amp; delivery</a><a href="/contact">Contact us</a></div>
+    </div>
+    <div class="footer-bottom"><span>© 2026 SnapQut. All rights reserved.</span><span>Made for creators who'd rather post than edit.</span></div>
+  </div>
+</footer>
+
+<script>
+window.SQ = {{{clientConfig}}};
+(function () {
+  var cfg = window.SQ || {};
+  var form = document.getElementById('emailForm'), payStep = document.getElementById('payStep'), doneStep = document.getElementById('doneStep');
+  var email = document.getElementById('email'), email2 = document.getElementById('email2');
+  var nameEl = document.getElementById('name'), agree = document.getElementById('agree');
+  var btn = document.getElementById('continueBtn'), btnHtml = btn.innerHTML;
+  var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+  var current = null; // { publicId, email, name }
+
+  // ---- Discount code ----
+  var coupon = null, origPrice = document.getElementById('sumPrice').textContent, origLabel = document.getElementById('payLabel').textContent;
+  var inr = function (p) { return '₹' + (p / 100).toLocaleString('en-IN'); };
+  function clearCoupon() {
+    coupon = null;
+    document.getElementById('sumPrice').textContent = origPrice;
+    document.getElementById('payLabel').textContent = origLabel;
+    document.getElementById('sumCoupon').hidden = true;
+    document.getElementById('couponOk').hidden = true;
+    document.getElementById('couponRow').hidden = false;
+  }
+  document.getElementById('couponToggle').addEventListener('click', function () {
+    this.hidden = true; document.getElementById('couponRow').hidden = false; document.getElementById('couponInput').focus();
+  });
+  function applyCoupon() {
+    var inp = document.getElementById('couponInput'), err = document.getElementById('couponErr');
+    err.textContent = '';
+    if (!inp.value.trim()) { err.textContent = 'Enter a discount code.'; return; }
+    post('/api/coupon', { code: inp.value }).then(function (c) {
+      coupon = c;
+      document.getElementById('sumPrice').textContent = inr(c.amountPaise);
+      var line = document.getElementById('sumCoupon'); line.hidden = false;
+      line.innerHTML = '<span></span><b></b>'; line.firstChild.textContent = c.code + ' · ' + c.label; line.lastChild.textContent = '−' + inr(c.discountPaise);
+      document.getElementById('payLabel').textContent = c.amountPaise ? 'Continue to payment · ' + inr(c.amountPaise) : 'Get my free key';
+      document.getElementById('couponRow').hidden = true;
+      document.getElementById('couponMsg').textContent = c.code + ' applied: ' + c.label;
+      document.getElementById('couponOk').hidden = false;
+    }).catch(function (x) { err.textContent = x.message; });
+  }
+  document.getElementById('couponApply').addEventListener('click', applyCoupon);
+  document.getElementById('couponInput').addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); applyCoupon(); } });
+  document.getElementById('couponRemove').addEventListener('click', function () { clearCoupon(); document.getElementById('couponInput').value = ''; });
+
+  function setErr(input, id, msg) {
+    document.getElementById(id).textContent = msg;
+    if (input) input.setAttribute('aria-invalid', msg ? 'true' : 'false');
+  }
+  function step(n) {
+    ['st1', 'st2', 'st3'].forEach(function (id, i) {
+      var li = document.getElementById(id);
+      li.classList.toggle('on', i + 1 === n);
+      li.classList.toggle('done', i + 1 < n);
+    });
+  }
+  function busy(on, label) { btn.disabled = on; btn.innerHTML = on ? '<span class="spinner"></span> ' + label : btnHtml; }
+  function post(url, data) {
+    return fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) })
+      .then(function (r) { return r.json().catch(function () { return {}; }).then(function (b) { if (!r.ok) throw new Error(b.error || 'Something went wrong. Please try again.'); return b; }); });
+  }
+  function show(el) { [form, payStep, doneStep].forEach(function (x) { x.hidden = x !== el; }); el.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+
+  function done(res) {
+    if (res.mode === 'free') document.querySelector('#doneStep h2').textContent = 'Your free key is ready!';
+    document.getElementById('keyShow').textContent = res.key;
+    document.getElementById('dlLink').href = '/download#' + encodeURIComponent(res.key);
+    document.getElementById('refShow').textContent = 'Order reference: ' + res.publicId;
+    var msg = document.getElementById('doneMsg'), warn = document.getElementById('mailWarn');
+    warn.hidden = true;
+    if (res.emailStatus === 'sent') msg.textContent = 'We\u2019ve emailed your access key to ' + res.email + '. It\u2019s also below.';
+    else if (res.emailStatus === 'logged') { msg.textContent = 'Here is your access key.'; warn.hidden = false; warn.textContent = 'Test mode: the email service isn\u2019t connected yet, so no email was sent. The email is saved in the admin console outbox.'; }
+    else { msg.textContent = 'Here is your access key. Save it somewhere safe.'; warn.hidden = false; warn.textContent = 'We couldn\u2019t email your key just now. Your purchase is saved and we\u2019ll resend it. Contact us if it doesn\u2019t arrive.'; }
+    step(3); show(doneStep);
+  }
+
+  function openRazorpay(o) {
+    if (typeof window.Razorpay !== 'function') { setErr(email, 'emailErr', 'The payment window didn\u2019t load. Check your connection or disable ad blockers, then try again.'); return; }
+    var rzp = new window.Razorpay({
+      key: o.keyId, amount: o.amount, currency: o.currency, order_id: o.razorpayOrderId,
+      name: 'SnapQut', description: 'SnapQut for Claude · lifetime licence', image: '/assets/icon.png',
+      prefill: { name: current.name, email: current.email },
+      notes: { order: o.publicId },
+      theme: { color: '#8b5cf6' },
+      handler: function (r) {
+        busy(true, 'Confirming payment…');
+        post('/api/checkout/verify', { publicId: o.publicId, razorpay_order_id: r.razorpay_order_id, razorpay_payment_id: r.razorpay_payment_id, razorpay_signature: r.razorpay_signature })
+          .then(done)
+          .catch(function (e) { busy(false); setErr(email, 'emailErr', e.message + ' If you were charged, your key will still be emailed to you.'); });
+      },
+      modal: { ondismiss: function () { busy(false); step(1); } }
+    });
+    rzp.on('payment.failed', function (r) { setErr(email, 'emailErr', 'Payment failed: ' + ((r.error && r.error.description) || 'please try again.')); });
+    step(2); rzp.open();
+  }
+
+  // ---- Cashfree ----
+  var phone = document.getElementById('phone');
+  if (cfg.mode === 'cashfree') document.getElementById('phoneField').hidden = false;
+  function confirmCashfree(publicId, tries) {
+    busy(true, 'Confirming payment…');
+    return post('/api/checkout/verify-cf', { publicId: publicId }).then(done).catch(function (e) {
+      // Cashfree can take a moment to mark the order paid; retry a few times
+      if (tries > 0 && /not completed yet/.test(e.message)) return new Promise(function (r) { setTimeout(r, 2500); }).then(function () { return confirmCashfree(publicId, tries - 1); });
+      busy(false); step(1); setErr(email, 'emailErr', e.message);
+    });
+  }
+  function openCashfree(o) {
+    if (typeof window.Cashfree !== 'function') { busy(false); setErr(email, 'emailErr', 'The payment window didn\u2019t load. Check your connection or disable ad blockers, then try again.'); return; }
+    step(2);
+    var cashfree = window.Cashfree({ mode: o.cfMode === 'production' ? 'production' : 'sandbox' });
+    cashfree.checkout({ paymentSessionId: o.paymentSessionId, redirectTarget: '_modal' }).then(function (result) {
+      if (result && result.error) { busy(false); step(1); setErr(email, 'emailErr', (result.error.message || 'Payment was cancelled.') + ' You can try again.'); return; }
+      confirmCashfree(o.publicId, 4);
+    });
+  }
+  // Coming back from Cashfree's own payment page (?order_id=...)
+  var back = new URLSearchParams(location.search).get('order_id');
+  if (back && cfg.mode === 'cashfree') { history.replaceState(null, '', location.pathname); confirmCashfree(back, 4); }
+
+  [email, email2].forEach(function (el) { el.addEventListener('input', function () { el.setAttribute('aria-invalid', 'false'); }); });
+
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var a = email.value.trim(), b = email2.value.trim(), ok = true;
+    setErr(email, 'emailErr', ''); setErr(email2, 'email2Err', ''); setErr(null, 'agreeErr', '');
+    if (!EMAIL_RE.test(a)) { setErr(email, 'emailErr', 'Enter a valid email, like you@example.com.'); ok = false; }
+    else if (a.toLowerCase() !== b.toLowerCase()) { setErr(email2, 'email2Err', 'The two emails don\u2019t match.'); ok = false; }
+    if (cfg.mode === 'cashfree') {
+      var ph = phone.value.replace(/\D/g, '').replace(/^91(?=\d{10}$)/, '');
+      setErr(phone, 'phoneErr', '');
+      if (!/^[6-9]\d{9}$/.test(ph)) { setErr(phone, 'phoneErr', 'Enter a 10-digit mobile number.'); ok = false; }
+    }
+    if (!agree.checked) { setErr(null, 'agreeErr', 'Please agree to the terms and refund policy to continue.'); ok = false; }
+    if (!ok) { (form.querySelector('[aria-invalid="true"]') || agree).focus(); return; }
+    if (cfg.mode === 'off') { setErr(email, 'emailErr', 'Checkout is temporarily unavailable. Please contact us on WhatsApp.'); return; }
+
+    busy(true, 'Preparing checkout…');
+    post('/api/checkout', { name: nameEl.value.trim(), email: a, phone: phone.value, coupon: coupon ? coupon.code : '' })
+      .then(function (o) {
+        current = { publicId: o.publicId, email: a, name: nameEl.value.trim() };
+        if (o.mode === 'free') { busy(false); done(o); return; }
+        if (o.mode === 'cashfree') { busy(true, 'Waiting for payment…'); openCashfree(o); }
+        else if (o.mode === 'razorpay') { busy(true, 'Waiting for payment…'); openRazorpay(o); }
+        else { busy(false); document.getElementById('emailShow').textContent = a; step(2); show(payStep); }
+      })
+      .catch(function (err) {
+        busy(false);
+        if (/code/i.test(err.message) && coupon) { clearCoupon(); document.getElementById('couponErr').textContent = err.message + ' Price reset.'; return; }
+        setErr(email, 'emailErr', err.message);
+      });
+  });
+
+  document.getElementById('simulateBtn').addEventListener('click', function () {
+    var b = this; b.disabled = true;
+    post('/api/checkout/test-pay', { publicId: current.publicId })
+      .then(done)
+      .catch(function (e) { b.disabled = false; alert(e.message); });
+  });
+  document.getElementById('changeEmail').addEventListener('click', function () { step(1); show(form); email.focus(); });
+  document.getElementById('copyKey').addEventListener('click', function () {
+    var k = document.getElementById('keyShow').textContent, b = this;
+    function ok() { b.textContent = 'Copied'; setTimeout(function () { b.textContent = 'Copy'; }, 1600); }
+    if (navigator.clipboard) navigator.clipboard.writeText(k).then(ok, function () {}); else ok();
+  });
+})();
+</script>
+</body>
+</html>

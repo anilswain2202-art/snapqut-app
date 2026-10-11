@@ -1,7 +1,14 @@
+# dependencies
 node_modules/
+# secrets and local data (never commit)
 .env
 .env.*
 !.env.example
 data/
-.DS_Store
 public/media/uploads/
+# OS / editor junk
+.DS_Store
+*.log
+# leftover nested copy (not part of the app)
+/snapqut-app/
+.claude/

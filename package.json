@@ -1,0 +1,17 @@
+{
+  "name": "snapqut-app",
+  "version": "1.0.0",
+  "private": true,
+  "description": "SnapQut website: landing page, blog, checkout with Razorpay, licence-key emails via Resend, and an admin console.",
+  "main": "server.js",
+  "type": "commonjs",
+  "engines": { "node": ">=22.13" },
+  "scripts": {
+    "start": "node --env-file-if-exists=.env server.js",
+    "dev": "node --watch --env-file-if-exists=.env server.js"
+  },
+  "dependencies": {
+    "express": "4.21.2",
+    "marked": "14.1.4"
+  }
+}

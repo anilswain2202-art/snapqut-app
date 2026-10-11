@@ -1,0 +1,964 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SnapQut for Claude</title>
+<meta name="description" content="Give Claude your footage, describe the video you want in one sentence, and SnapQut does the editing. One-time {{price}}.">
+<link rel="icon" type="image/png" href="/assets/favicon.png">
+<style>
+/* Layout: autocaption.io structure. Black ground with a violet glow, #111120 cards with a faint white border,
+   an inset media panel under each card's title, violet only for actions and the active step. */
+:root {
+  --bg: #050509;
+  --card: #111120;
+  --panel: #0a0a15;
+  --border: rgba(255, 255, 255, .08);
+  --border-strong: rgba(255, 255, 255, .16);
+  --fg: #ffffff;
+  --muted: rgba(255, 255, 255, .58);
+  --faint: rgba(255, 255, 255, .38);
+  --violet: #8b5cf6;
+  --violet-btn: #9333ea;
+  --violet-text: #c084fc;
+  --caption: #facc15;
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin: 0; background: var(--bg); color: var(--fg); font: 400 16px/1.5 var(--font); -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+img, video { display: block; max-width: 100%; }
+a { color: inherit; text-decoration: none; }
+h1, h2, h3, p { margin: 0; }
+h1, h2 { font-weight: 700; letter-spacing: -0.025em; text-wrap: balance; }
+h2 { font-size: clamp(2rem, 4.6vw, 3rem); line-height: 1.12; }
+.wrap { max-width: 1200px; margin: 0 auto; padding-inline: 20px; }
+.violet { color: var(--violet); }
+:focus-visible { outline: 2px solid var(--violet-text); outline-offset: 3px; border-radius: 8px; }
+
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: 0; cursor: pointer; font: 600 14px/20px var(--font); color: #fff; background: var(--violet-btn); padding: 10px 20px; border-radius: 999px; transition: background .2s ease, transform .2s ease; }
+.btn:hover { background: #a855f7; }
+.btn-lg { font-size: 16px; padding: 16px 28px; box-shadow: 0 0 40px -6px rgba(147, 51, 234, .75); }
+.btn-lg:hover { transform: translateY(-1px); }
+.spark { font-size: .9em; }
+
+.eyebrow { display: block; color: var(--violet-text); font-size: 11px; font-weight: 700; letter-spacing: .22em; text-transform: uppercase; margin-bottom: 16px; }
+.section { padding-block: 96px; }
+.head { text-align: center; max-width: 720px; margin: 0 auto 48px; display: grid; justify-items: center; }
+.head p.sub { color: var(--muted); font-size: 17px; margin-top: 16px; max-width: 560px; }
+
+/* Nav */
+.nav { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 40; background: rgba(5, 5, 9, .82); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border-bottom: 1px solid var(--border); }
+.nav .wrap { height: 64px; display: flex; align-items: center; gap: 24px; }
+.nav-logo img { height: 32px; width: auto; }
+.nav-links { display: flex; gap: 28px; margin-left: 28px; font-size: 14px; color: rgba(255, 255, 255, .72); }
+.nav-links a:hover { color: #fff; }
+.nav .btn { margin-left: auto; }
+@media (max-width: 900px) { .nav-links { display: none; } }
+
+/* Hero */
+.hero { position: relative; overflow: hidden; padding-block: 64px 72px; }
+.hero::before { content: ""; position: absolute; top: -260px; right: -160px; width: 900px; height: 700px; background: radial-gradient(closest-side, rgba(124, 58, 237, .28), transparent 72%); pointer-events: none; }
+.hero .wrap { position: relative; display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: center; }
+.hero-copy { min-width: 0; }
+.badge { display: inline-flex; align-items: center; gap: 8px; border: 1px solid rgba(255, 255, 255, .2); padding: 8px 16px; border-radius: 999px; font-size: 14px; color: rgba(255, 255, 255, .75); margin-bottom: 28px; }
+.badge .spark { color: var(--violet-text); }
+.hero h1 { font-size: clamp(2.6rem, 5vw, 3.5rem); line-height: 1.1; letter-spacing: -1.2px; margin-bottom: 20px; }
+.hero .lead { color: var(--muted); font-size: 17px; line-height: 1.6; max-width: 470px; margin-bottom: 32px; }
+.hero-cta { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 20px; }
+.hero-cta small { color: var(--faint); font-size: 14px; }
+
+.cmp-wrap { display: grid; justify-items: center; gap: 14px; }
+.cmp { position: relative; width: min(100%, 380px); aspect-ratio: 9 / 16; border-radius: 20px; overflow: hidden; background: #000; border: 1px solid var(--border-strong); box-shadow: 0 30px 80px -30px rgba(0, 0, 0, .9), 0 0 90px -30px rgba(124, 58, 237, .6); touch-action: pan-y; cursor: ew-resize; user-select: none; -webkit-user-select: none; --pos: 50%; }
+.cmp video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
+.cmp .edited { clip-path: inset(0 0 0 var(--pos)); }
+.cmp .chip { position: absolute; top: 12px; z-index: 3; padding: 5px 9px; border-radius: 6px; background: rgba(0, 0, 0, .62); backdrop-filter: blur(6px); font: 700 10.5px/1 var(--mono); letter-spacing: .12em; color: #fff; pointer-events: none; }
+.cmp .chip.raw { left: 12px; }
+.cmp .chip.ed { right: 12px; background: var(--violet); }
+.cmp .divider { position: absolute; top: 0; bottom: 0; left: var(--pos); z-index: 4; width: 2px; margin-left: -1px; background: #fff; box-shadow: 0 0 12px rgba(0, 0, 0, .5); pointer-events: none; }
+.cmp .handle { position: absolute; top: 58%; left: var(--pos); z-index: 5; width: 40px; height: 40px; margin: -20px 0 0 -20px; border-radius: 50%; border: 0; background: #fff; color: #111; display: grid; place-items: center; cursor: ew-resize; box-shadow: 0 6px 20px rgba(0, 0, 0, .45); }
+.cmp .handle svg { width: 20px; height: 20px; }
+.cmp.dragging .handle { transform: scale(1.08); }
+.cmp .snd { position: absolute; right: 12px; bottom: 12px; z-index: 6; }
+.snd { display: inline-flex; align-items: center; gap: 6px; border: 0; cursor: pointer; padding: 8px 12px; border-radius: 999px; background: rgba(0, 0, 0, .65); color: #fff; font: 500 12px/1 var(--font); backdrop-filter: blur(6px); }
+.snd svg { width: 14px; height: 14px; }
+.cmp-note { color: var(--faint); font-size: 13px; text-align: center; max-width: 380px; }
+@media (max-width: 900px) { .hero .wrap { grid-template-columns: 1fr; } }
+
+/* Proof bar + marquee */
+.proof { border-block: 1px solid var(--border); background: rgba(255, 255, 255, .015); }
+.stats { display: flex; justify-content: center; flex-wrap: wrap; padding-block: 22px; }
+.stat { padding: 4px 32px; text-align: center; border-left: 1px solid var(--border); }
+.stat:first-child { border-left: 0; }
+.stat b { display: block; font-size: 15px; }
+.stat span { color: var(--faint); font-size: 13px; }
+.marquee { overflow: hidden; border-top: 1px solid var(--border); mask-image: linear-gradient(90deg, transparent, #000 10%, #000 90%, transparent); -webkit-mask-image: linear-gradient(90deg, transparent, #000 10%, #000 90%, transparent); }
+.marquee-track { display: flex; width: max-content; animation: slide 30s linear infinite; }
+.marquee-track span { padding: 20px 28px; font-size: 18px; font-weight: 600; color: rgba(255, 255, 255, .42); white-space: nowrap; }
+@keyframes slide { to { transform: translateX(-50%); } }
+@media (max-width: 600px) { .stat { padding: 6px 16px; border-left: 0; } }
+
+/* Cards (autocaption feature card) */
+.card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; display: flex; flex-direction: column; min-width: 0; }
+.card-head { padding: 20px 20px 16px; }
+.card-head h3 { font-size: 15px; font-weight: 600; line-height: 1.375; margin-bottom: 6px; }
+.card-head p { color: var(--muted); font-size: 13.5px; line-height: 1.55; }
+.media { position: relative; margin: 0 16px 16px; border-radius: 12px; overflow: hidden; background: var(--panel); border: 1px solid rgba(255, 255, 255, .06); aspect-ratio: 16 / 10; flex: 1 0 auto; }
+.media::after { content: ""; position: absolute; inset: auto 0 0 0; height: 45%; background: radial-gradient(60% 100% at 50% 100%, rgba(124, 58, 237, .22), transparent); pointer-events: none; }
+.media > video.fill { width: 100%; height: 100%; object-fit: cover; }
+.grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; max-width: 900px; margin: 0 auto; }
+@media (max-width: 760px) { .grid-2 { grid-template-columns: 1fr; } }
+
+/* Phones inside media panels */
+.phones { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; gap: 10px; padding: 18px; z-index: 1; }
+.ph { height: 100%; aspect-ratio: 9 / 16; border-radius: 10px; overflow: hidden; border: 1px solid var(--border-strong); background: #000; flex: none; box-shadow: 0 12px 30px -10px rgba(0, 0, 0, .8); }
+.ph img, .ph video { width: 100%; height: 100%; object-fit: cover; }
+.ph.sm { height: 74%; }
+.ph-label { position: absolute; left: 50%; bottom: 10px; transform: translateX(-50%); z-index: 2; font-size: 11px; color: var(--muted); background: rgba(0, 0, 0, .6); padding: 4px 10px; border-radius: 999px; white-space: nowrap; }
+.prompt-mock { position: absolute; left: 18px; right: 18px; bottom: 18px; z-index: 2; padding: 12px 14px; border-radius: 10px; background: rgba(17, 17, 32, .92); border: 1px solid var(--border-strong); font: 12px/1.5 var(--mono); color: #fff; }
+.price-mock { position: absolute; inset: 0; display: grid; place-items: center; z-index: 1; }
+.price-mock div { width: min(78%, 280px); padding: 18px; border-radius: 12px; background: var(--card); border: 1px solid rgba(139, 92, 246, .55); box-shadow: 0 0 32px rgba(124, 58, 237, .25); display: grid; gap: 8px; }
+.price-mock b { font-size: 30px; letter-spacing: -0.02em; }
+.price-mock span { font-size: 12px; color: var(--muted); display: flex; justify-content: space-between; border-top: 1px solid var(--border); padding-top: 8px; }
+.price-mock span i { font-style: normal; color: #4ade80; }
+
+
+/* Features: highlighted core feature + connected timeline */
+@property --ang { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
+.fx-hero { position: relative; border-radius: 24px; padding: 1.5px; background: conic-gradient(from var(--ang), #8b5cf6, #2dd4bf 25%, #c084fc 50%, #6366f1 75%, #8b5cf6); animation: fx-spin 7s linear infinite; box-shadow: 0 0 90px -25px rgba(139, 92, 246, .75), 0 40px 80px -40px rgba(0, 0, 0, .9); }
+@keyframes fx-spin { to { --ang: 360deg; } }
+.fx-inner { border-radius: 22.5px; background: radial-gradient(70% 90% at 0% 0%, rgba(139, 92, 246, .22), transparent 60%), radial-gradient(60% 80% at 100% 100%, rgba(45, 212, 191, .12), transparent 60%), #0e0d1a; display: grid; grid-template-columns: minmax(0, .95fr) minmax(0, 1.05fr); gap: 44px; align-items: center; padding: 44px; }
+.fx-copy { display: grid; gap: 20px; justify-items: start; min-width: 0; }
+.fx-badge { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; border-radius: 999px; background: rgba(139, 92, 246, .16); border: 1px solid rgba(139, 92, 246, .45); color: var(--violet-text); font-size: 12px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
+.fx-copy h3 { font-size: clamp(2rem, 4vw, 2.9rem); font-weight: 750; letter-spacing: -0.03em; line-height: 1.05; text-wrap: balance; }
+.grad { background: linear-gradient(90deg, #c084fc, #8b5cf6 45%, #2dd4bf); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.fx-copy > p { color: var(--muted); font-size: 16.5px; line-height: 1.65; max-width: 44ch; }
+.try { display: grid; gap: 10px; width: 100%; }
+.try small { color: var(--faint); font-size: 12px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; }
+.try-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.try-chip { cursor: pointer; padding: 8px 12px; border-radius: 10px; border: 1px solid var(--border-strong); background: rgba(255, 255, 255, .03); color: rgba(255, 255, 255, .75); font: 12.5px/1.3 var(--mono); text-align: left; transition: all .25s ease; }
+.try-chip:hover { border-color: rgba(139, 92, 246, .6); color: #fff; }
+.try-chip.on { border-color: var(--violet); background: rgba(139, 92, 246, .2); color: #fff; box-shadow: 0 0 20px rgba(139, 92, 246, .35); }
+.fx-ticks { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px 20px; color: rgba(255, 255, 255, .8); font-size: 14px; }
+.fx-ticks li { display: inline-flex; align-items: center; gap: 8px; }
+.fx-ticks li::before { content: "✓"; width: 18px; height: 18px; border-radius: 50%; display: grid; place-items: center; font-size: 11px; font-weight: 700; background: rgba(74, 222, 128, .15); color: #4ade80; }
+.fx-frame { border-radius: 16px; padding: 12px; background: rgba(0, 0, 0, .35); border: 1px solid var(--border); box-shadow: 0 30px 60px -30px rgba(0, 0, 0, .9); min-width: 0; }
+@media (max-width: 900px) { .fx-inner { grid-template-columns: 1fr; padding: 28px 22px; gap: 28px; } }
+
+.tl { position: relative; display: grid; gap: 28px; padding-top: 64px; }
+.tl-line { position: absolute; left: 50%; top: 0; bottom: 22px; width: 2px; margin-left: -1px; background: rgba(255, 255, 255, .08); border-radius: 2px; }
+.tl-fill { position: absolute; left: 0; top: 0; width: 100%; height: 0; border-radius: 2px; background: linear-gradient(180deg, #c084fc, #8b5cf6 50%, #2dd4bf); box-shadow: 0 0 14px rgba(139, 92, 246, .8); }
+.tl-fill::after { content: ""; position: absolute; left: 50%; bottom: -6px; width: 12px; height: 12px; margin-left: -6px; border-radius: 50%; background: #fff; box-shadow: 0 0 0 4px rgba(139, 92, 246, .45), 0 0 18px #a78bfa; }
+.tl-item { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) 72px minmax(0, 1fr); align-items: center; }
+.tl-item.left > .card { grid-column: 1; }
+.tl-item.right > .card { grid-column: 3; }
+.tl-item > .card { grid-row: 1; transition: border-color .4s ease, box-shadow .4s ease, transform .4s ease; }
+.tl-node { grid-column: 2; grid-row: 1; justify-self: center; position: relative; z-index: 1; width: 18px; height: 18px; border-radius: 50%; background: var(--bg); border: 2px solid rgba(255, 255, 255, .22); transition: all .35s ease; }
+.tl-node::after { content: ""; position: absolute; top: 50%; width: 27px; height: 2px; margin-top: -1px; background: rgba(255, 255, 255, .12); transition: background .35s ease; }
+.tl-item.left .tl-node::after { right: 100%; }
+.tl-item.right .tl-node::after { left: 100%; }
+.tl-item.lit .tl-node { border-color: #c084fc; background: var(--violet); box-shadow: 0 0 0 5px rgba(139, 92, 246, .2), 0 0 18px rgba(139, 92, 246, .8); }
+.tl-item.lit .tl-node::after { background: rgba(139, 92, 246, .8); }
+.tl-item.lit > .card { border-color: rgba(139, 92, 246, .5); box-shadow: 0 0 40px -10px rgba(124, 58, 237, .45); }
+.tl-end { position: relative; z-index: 1; justify-self: center; display: inline-flex; align-items: center; gap: 8px; padding: 10px 18px; border-radius: 999px; background: var(--card); border: 1px solid var(--border-strong); font-size: 14px; font-weight: 600; transition: all .4s ease; }
+.tl-end.lit { border-color: #2dd4bf; box-shadow: 0 0 30px rgba(45, 212, 191, .35); }
+.tl-end .spark { color: #2dd4bf; }
+@media (max-width: 760px) {
+  .tl { padding-top: 40px; }
+  .tl-line { left: 15px; }
+  .tl-item { grid-template-columns: 30px minmax(0, 1fr); gap: 0 14px; }
+  .tl-item.left > .card, .tl-item.right > .card { grid-column: 2; }
+  .tl-node { grid-column: 1; }
+  .tl-item.left .tl-node::after { right: auto; left: 100%; width: 10px; }
+  .tl-item.right .tl-node::after { width: 10px; }
+  .tl-end { justify-self: start; }
+}
+
+.ask-mock { position: absolute; inset: 0; z-index: 1; display: grid; place-content: center; justify-items: center; gap: 12px; padding: 16px; text-align: center; }
+.ask-q { padding: 12px 16px; border-radius: 14px 14px 14px 4px; background: #24213a; border: 1px solid var(--border-strong); font-size: 14px; font-weight: 600; box-shadow: 0 20px 40px -20px rgba(0, 0, 0, .9); }
+.ask-q .spark { color: var(--violet-text); }
+.ask-btns { display: flex; gap: 8px; }
+.ask-btns span { padding: 7px 22px; border-radius: 8px; font-size: 13px; font-weight: 600; background: rgba(255, 255, 255, .08); border: 1px solid var(--border-strong); }
+.ask-btns .yes { background: var(--violet); border-color: var(--violet); animation: nudge 2.4s ease-in-out infinite; }
+@keyframes nudge { 0%, 70%, 100% { box-shadow: 0 0 0 0 rgba(139, 92, 246, .6); } 85% { box-shadow: 0 0 0 8px rgba(139, 92, 246, 0); } }
+.ask-mock small { color: var(--faint); font-size: 12px; }
+
+/* How it works: zigzag rows (media and text alternate sides) */
+.how-head { display: grid; gap: 12px; padding-bottom: 32px; border-bottom: 1px solid var(--border); }
+.how-head h2 { font-size: clamp(2rem, 4.2vw, 2.75rem); }
+.how-head p { color: var(--muted); font-size: 17px; max-width: 560px; }
+.zig { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 56px; align-items: center; padding-block: 48px; border-bottom: 1px solid var(--border); }
+.zig:nth-of-type(even) .zig-media { order: 2; }
+.zig-media { position: relative; border-radius: 18px; padding: 16px; background: radial-gradient(70% 90% at 20% 0%, rgba(139, 92, 246, .30), transparent 60%), radial-gradient(60% 80% at 100% 100%, rgba(45, 212, 191, .16), transparent 60%), #0b0a14; border: 1px solid var(--border); box-shadow: 0 30px 70px -40px rgba(0, 0, 0, .9); }
+.zig-text { display: grid; gap: 14px; justify-items: start; min-width: 0; }
+.step-tag { display: inline-flex; align-items: center; gap: 8px; padding: 5px 11px; border-radius: 999px; border: 1px solid rgba(139, 92, 246, .35); background: rgba(139, 92, 246, .1); color: var(--violet-text); font: 600 11px/1 var(--mono); letter-spacing: .14em; text-transform: uppercase; }
+.step-tag::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--violet); }
+.zig-text h3 { font-size: clamp(1.4rem, 2.4vw, 1.75rem); font-weight: 700; letter-spacing: -0.015em; line-height: 1.2; }
+.zig-text p { color: var(--muted); font-size: 15.5px; line-height: 1.7; max-width: 46ch; }
+.step-prompt { display: block; padding: 12px 14px; border-radius: 10px; background: var(--card); border: 1px solid var(--border-strong); font: 13px/1.55 var(--mono); color: #fff; max-width: 46ch; }
+.how-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 14px 20px; padding-top: 44px; }
+.how-foot small { color: var(--faint); font-size: 14px; }
+@media (max-width: 860px) {
+  .zig { grid-template-columns: 1fr; gap: 24px; padding-block: 36px; }
+  .zig:nth-of-type(even) .zig-media { order: 0; }
+}
+
+
+/* Motion-graphic UI scenes (replace screen recordings) */
+.scr { position: relative; aspect-ratio: 4 / 3; border-radius: 10px; overflow: hidden; background: radial-gradient(90% 70% at 50% 0%, #1e1a2e, #13111b 70%); border: 1px solid rgba(255, 255, 255, .1); container-type: inline-size; font-size: clamp(8px, 2.6cqw, 14px); color: #ece9f7; line-height: 1.35; user-select: none; -webkit-user-select: none; }
+.media .scr { position: absolute; inset: 14px; aspect-ratio: auto; z-index: 1; }
+.scr svg { width: 1.1em; height: 1.1em; flex: none; }
+.win-bar { position: absolute; inset: 0 0 auto 0; height: 2.4em; display: flex; align-items: center; gap: .45em; padding: 0 1em; border-bottom: 1px solid rgba(255, 255, 255, .07); background: rgba(10, 9, 16, .6); }
+.win-bar i { width: .62em; height: .62em; border-radius: 50%; background: rgba(255, 255, 255, .18); }
+.win-bar span { margin-left: .5em; font-size: .85em; color: rgba(255, 255, 255, .5); }
+.greet { position: absolute; top: 22%; left: 0; right: 0; text-align: center; font-size: 1.45em; font-weight: 650; letter-spacing: -0.01em; }
+.greet em { font-style: normal; color: var(--violet-text); margin-right: .25em; }
+.composer { position: absolute; left: 6%; right: 6%; bottom: 7%; padding: .8em .9em; border-radius: .9em; background: #221f2e; border: 1px solid rgba(255, 255, 255, .1); display: grid; gap: .7em; box-shadow: 0 1em 2em -1em rgba(0, 0, 0, .7); transition: opacity .3s ease; }
+.composer.gone { opacity: 0; }
+.c-file { display: none; align-items: center; gap: .7em; padding: .5em; border-radius: .6em; background: rgba(255, 255, 255, .05); border: 1px solid rgba(255, 255, 255, .08); animation: pop .35s ease; }
+.c-file.on { display: flex; }
+.c-file img { width: 2.2em; height: 3.2em; object-fit: cover; border-radius: .3em; }
+.c-file div { flex: 1; display: grid; gap: .25em; min-width: 0; }
+.c-file b { font-size: .9em; font-weight: 600; }
+.c-file small { font-size: .75em; color: rgba(255, 255, 255, .5); }
+.scr .bar { height: .3em; border-radius: 1em; background: rgba(255, 255, 255, .1); overflow: hidden; }
+.scr .bar i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--violet), #a78bfa); transition: width 1.4s ease; }
+.c-file.on.up .bar i { width: 100%; }
+.c-file .ok { font-style: normal; font-size: .75em; color: #4ade80; opacity: 0; transition: opacity .3s ease; }
+.c-file.done .ok { opacity: 1; }
+.c-input { position: relative; min-height: 1.4em; font-size: .95em; }
+.c-input .ph { color: rgba(255, 255, 255, .35); }
+.c-input.typing .ph { display: none; }
+.caret { display: none; width: 1px; height: 1.1em; background: #fff; vertical-align: -0.2em; margin-left: 1px; animation: blink 1s steps(1) infinite; }
+.c-input.typing .caret { display: inline-block; }
+.c-row { display: flex; align-items: center; gap: .6em; }
+.c-plus { width: 1.9em; height: 1.9em; border-radius: 50%; display: grid; place-items: center; border: 1px solid rgba(255, 255, 255, .15); font-size: 1em; transition: transform .15s ease, background .15s ease; }
+.c-folder { display: inline-flex; align-items: center; gap: .4em; padding: .35em .7em; border-radius: .5em; border: 1px solid rgba(255, 255, 255, .12); font-size: .82em; color: rgba(255, 255, 255, .7); transition: all .3s ease; }
+.c-folder.active { border-color: rgba(139, 92, 246, .7); background: rgba(139, 92, 246, .18); color: #fff; box-shadow: 0 0 1.2em rgba(139, 92, 246, .35); }
+.c-send { margin-left: auto; width: 2em; height: 2em; border-radius: .6em; display: grid; place-items: center; background: rgba(255, 255, 255, .12); color: #fff; transition: background .2s ease, transform .15s ease; }
+.c-send.ready { background: var(--violet); }
+.press { transform: scale(.9) !important; background: rgba(139, 92, 246, .35) !important; }
+.dlg { position: absolute; left: 13%; right: 13%; top: 33%; bottom: 24%; display: grid; grid-template-columns: 30% 1fr; border-radius: .8em; overflow: hidden; background: #24212f; border: 1px solid rgba(255, 255, 255, .14); box-shadow: 0 2em 4em -1em rgba(0, 0, 0, .8); opacity: 0; transform: scale(.94) translateY(.6em); transition: opacity .3s ease, transform .3s ease; pointer-events: none; z-index: 3; }
+.dlg.on { opacity: 1; transform: none; }
+.dlg-side { background: rgba(0, 0, 0, .25); padding: .9em .8em; display: grid; align-content: start; gap: .55em; font-size: .82em; color: rgba(255, 255, 255, .6); }
+.dlg-side small { font-size: .78em; text-transform: uppercase; letter-spacing: .1em; color: rgba(255, 255, 255, .35); }
+.dlg-main { position: relative; padding: .8em; display: grid; align-content: start; gap: .3em; }
+.dlg-path { font-size: .8em; color: rgba(255, 255, 255, .45); margin-bottom: .3em; }
+.row { display: flex; align-items: center; gap: .55em; padding: .4em .6em; border-radius: .4em; font-size: .9em; transition: background .2s ease; }
+.row svg { color: #8ab4ff; }
+.row.sel { background: #3b5bdb; color: #fff; }
+.row.sel svg { color: #fff; }
+.dlg-btns { position: absolute; right: .8em; bottom: .8em; display: flex; gap: .5em; font-size: .82em; }
+.dlg-btns span { padding: .4em .9em; border-radius: .45em; background: rgba(255, 255, 255, .1); transition: transform .15s ease; }
+.dlg-btns .btn-o { background: #3b5bdb; }
+.toast { position: absolute; left: 50%; top: 40%; transform: translate(-50%, .5em); z-index: 3; display: inline-flex; align-items: center; gap: .5em; padding: .55em 1em; border-radius: 2em; background: rgba(34, 197, 94, .14); border: 1px solid rgba(74, 222, 128, .45); color: #bbf7d0; font-size: .9em; font-weight: 600; opacity: 0; transition: all .35s ease; white-space: nowrap; }
+.toast.on { opacity: 1; transform: translate(-50%, 0); }
+.menu { position: absolute; left: 6%; bottom: 28%; z-index: 3; display: grid; gap: .15em; padding: .4em; border-radius: .7em; background: #2a2637; border: 1px solid rgba(255, 255, 255, .14); box-shadow: 0 1.5em 3em -1em rgba(0, 0, 0, .8); font-size: .88em; opacity: 0; transform: translateY(.6em); transition: all .25s ease; }
+.menu.on { opacity: 1; transform: none; }
+.mi { display: flex; align-items: center; gap: .6em; padding: .45em .7em; border-radius: .45em; transition: background .15s ease; }
+.mi.hl { background: rgba(139, 92, 246, .3); }
+.msg { position: absolute; right: 6%; top: 16%; max-width: 62%; padding: .7em .9em; border-radius: .9em .9em .25em .9em; background: #2c2840; border: 1px solid rgba(255, 255, 255, .1); font-size: .88em; opacity: 0; transform: translateY(1em); transition: all .4s ease; }
+.msg.on { opacity: 1; transform: none; }
+.think { position: absolute; left: 6%; top: 42%; display: flex; align-items: center; gap: .6em; font-size: .88em; color: var(--violet-text); opacity: 0; transition: opacity .3s ease; }
+.think.on { opacity: 1; }
+/* Keep the greeting visible: in the typing scene the sent message and status sit below it */
+.scr[data-scene="3"] .msg { top: 36%; }
+.scr[data-scene="3"] .think { top: auto; bottom: 22%; }
+.spin { width: 1em; height: 1em; border-radius: 50%; border: 2px solid rgba(192, 132, 252, .3); border-top-color: var(--violet-text); animation: spin .8s linear infinite; }
+.work { position: absolute; left: 6%; top: 36%; width: 52%; list-style: none; margin: 0; padding: 0; display: grid; gap: .65em; font-size: .88em; }
+.work li { display: flex; align-items: center; gap: .6em; opacity: .22; transition: opacity .3s ease; flex-wrap: wrap; }
+.work li .st { width: 1.15em; height: 1.15em; border-radius: 50%; border: 2px solid rgba(255, 255, 255, .3); flex: none; display: grid; place-items: center; font-size: .7em; }
+.work li.run { opacity: 1; }
+.work li.run .st { border-color: rgba(192, 132, 252, .3); border-top-color: var(--violet-text); animation: spin .8s linear infinite; }
+.work li.done { opacity: .9; }
+.work li.done .st { border: 0; background: var(--violet); animation: none; }
+.work li.done .st::after { content: "✓"; color: #fff; font-weight: 700; }
+.work .bar { flex-basis: 100%; margin-left: 1.75em; }
+.work li.run .bar i, .work li.done .bar i { width: 100%; }
+.res { position: absolute; right: 6%; top: 32%; bottom: 6%; display: grid; justify-items: center; align-content: start; gap: .5em; opacity: 0; transform: translateX(1.5em) scale(.96); transition: all .5s cubic-bezier(.2, .8, .2, 1); }
+.res.on { opacity: 1; transform: none; }
+.res-ph { height: calc(100% - 2.6em); aspect-ratio: 9 / 16; border-radius: .7em; overflow: hidden; border: 1px solid rgba(255, 255, 255, .2); background: #000; box-shadow: 0 0 2.5em rgba(139, 92, 246, .45); }
+.res-ph video { width: 100%; height: 100%; object-fit: cover; }
+.res b { font-size: .78em; font-weight: 600; white-space: nowrap; }
+.res small { font-size: .72em; color: #4ade80; margin-top: -.4em; }
+.cur { position: absolute; left: 80%; top: 85%; z-index: 9; width: 1.5em; height: 1.5em; margin: -.2em 0 0 -.25em; transition: left .55s cubic-bezier(.4, 0, .2, 1), top .55s cubic-bezier(.4, 0, .2, 1); filter: drop-shadow(0 .15em .25em rgba(0, 0, 0, .6)); pointer-events: none; }
+.cur svg { width: 100%; height: 100%; transition: transform .12s ease; }
+.cur.click svg { transform: scale(.78); }
+.cur.click::after { content: ""; position: absolute; left: .1em; top: .1em; width: 1.2em; height: 1.2em; margin: -.6em 0 0 -.6em; border-radius: 50%; border: 2px solid rgba(192, 132, 252, .9); animation: ripple .45s ease-out forwards; }
+@keyframes ripple { from { transform: scale(.3); opacity: 1; } to { transform: scale(1.6); opacity: 0; } }
+@keyframes blink { 50% { opacity: 0; } }
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes pop { from { opacity: 0; transform: translateY(.5em); } }
+
+/* Examples: auto-scrolling carousel */
+.carousel { position: relative; overflow: hidden; padding-block: 8px 4px; mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent); -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent); }
+.carousel { touch-action: pan-y; cursor: grab; user-select: none; -webkit-user-select: none; perspective: 1300px; padding-block: 28px 36px; }
+.carousel.dragging { cursor: grabbing; }
+.carousel-track { display: flex; gap: 14px; width: max-content; will-change: transform; transform-style: preserve-3d; }
+.carousel-wrap { position: relative; }
+.car-btn { position: absolute; top: 50%; z-index: 5; transform: translateY(-50%); width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--border-strong); background: rgba(17, 17, 32, .9); color: #fff; display: grid; place-items: center; cursor: pointer; box-shadow: 0 8px 24px rgba(0, 0, 0, .5); transition: background .2s ease; }
+.car-btn:hover { background: var(--violet-btn); }
+.car-btn svg { width: 18px; height: 18px; }
+.car-btn.prev { left: 4px; }
+.car-btn.next { right: 4px; }
+.rc { -webkit-user-drag: none; }
+.rc video { pointer-events: none; }
+.rc { position: relative; flex: none; width: 210px; aspect-ratio: 9 / 16; border-radius: 16px; overflow: hidden; background: #000; border: 1px solid var(--border-strong); cursor: pointer; padding: 0; color: inherit; font: inherit; transition: border-color .25s ease, box-shadow .25s ease; will-change: transform; transform-origin: 50% 50%; }
+.rc:hover { border-color: rgba(139, 92, 246, .6); box-shadow: 0 0 30px rgba(124, 58, 237, .35); }
+.rc video { width: 100%; height: 100%; object-fit: cover; }
+.rc .rc-label { position: absolute; left: 8px; right: 8px; bottom: 8px; z-index: 2; display: flex; align-items: center; justify-content: space-between; gap: 6px; padding: 7px 10px; border-radius: 10px; background: rgba(0, 0, 0, .62); backdrop-filter: blur(6px); font-size: 12px; font-weight: 600; text-align: left; }
+.rc .rc-label svg { flex: none; width: 14px; height: 14px; color: var(--violet-text); }
+.rc .tag { position: absolute; top: 8px; left: 8px; z-index: 2; padding: 3px 9px; border-radius: 999px; font-size: 11px; font-weight: 600; background: var(--violet); color: #fff; }
+.carousel-note { text-align: center; color: var(--faint); font-size: 13px; margin-top: 18px; }
+@media (max-width: 600px) { .rc { width: 160px; } .car-btn { width: 38px; height: 38px; } }
+
+/* Testimonials (autocaption "more tools" cards) */
+.tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.tile { display: flex; gap: 16px; padding: 20px; border-radius: 12px; background: var(--card); border: 1px solid var(--border); min-width: 0; }
+.tile .ico { flex: none; width: 36px; height: 36px; border-radius: 9px; display: grid; place-items: center; background: rgba(139, 92, 246, .14); border: 1px solid rgba(139, 92, 246, .3); color: var(--violet-text); font-size: 13px; font-weight: 700; }
+.tile h3 { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+.tile p { color: var(--muted); font-size: 13.5px; }
+.stars { color: var(--caption); letter-spacing: 1px; margin-right: 6px; }
+@media (max-width: 900px) { .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 600px) { .tiles { grid-template-columns: 1fr; } }
+
+/* Pricing */
+.plan { max-width: 480px; margin: 0 auto; padding: 32px; border-radius: 20px; background: var(--card); border: 1px solid rgba(139, 92, 246, .55); box-shadow: 0 0 60px rgba(124, 58, 237, .22); display: grid; gap: 20px; }
+.plan-top { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+.plan-name { font-size: 12px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--violet-text); }
+.hot { font-size: 12px; font-weight: 600; padding: 5px 10px; border-radius: 999px; background: rgba(250, 204, 21, .12); color: var(--caption); }
+.price { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.price b { font-size: 56px; line-height: 1; letter-spacing: -0.03em; }
+.price s { color: var(--faint); font-size: 20px; }
+.price span { color: var(--muted); font-size: 14px; }
+.checks { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; font-size: 15px; }
+.checks li { display: flex; gap: 10px; align-items: flex-start; }
+.checks li::before { content: "✓"; flex: none; width: 18px; height: 18px; border-radius: 5px; display: grid; place-items: center; font-size: 11px; font-weight: 700; background: rgba(139, 92, 246, .2); color: var(--violet-text); margin-top: 2px; }
+.plan .btn { width: 100%; }
+.fine { color: var(--faint); font-size: 13px; text-align: center; }
+
+/* FAQ */
+.faq { max-width: 680px; margin: 0 auto; display: grid; gap: 10px; }
+.faq details { background: var(--card); border: 1px solid var(--border); border-radius: 12px; transition: border-color .2s ease; }
+.faq details[open] { border-color: rgba(139, 92, 246, .45); }
+.faq summary { list-style: none; cursor: pointer; padding: 16px 18px; display: flex; align-items: center; justify-content: space-between; gap: 16px; font-size: 15px; font-weight: 600; }
+.faq summary::-webkit-details-marker { display: none; }
+.faq summary::after { content: "+"; flex: none; width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; font-size: 15px; font-weight: 400; background: rgba(255, 255, 255, .08); color: var(--muted); }
+.faq details[open] summary::after { content: "×"; background: rgba(139, 92, 246, .35); color: #fff; }
+.faq details p { padding: 0 18px 18px; color: var(--muted); font-size: 14px; line-height: 1.65; }
+
+/* Closing: copy left, staggered collage of caption stills right */
+.closing { position: relative; overflow: hidden; border-radius: 32px; border: 1px solid rgba(139, 92, 246, .22); background: radial-gradient(60% 80% at 85% 110%, rgba(124, 58, 237, .38), transparent 60%), linear-gradient(180deg, #0f0d1c, #090812); display: grid; grid-template-columns: minmax(0, 1fr); align-items: center; min-height: 580px; box-shadow: 0 0 0 1px rgba(255, 255, 255, .03) inset; }
+.closing-copy { position: relative; z-index: 2; padding: 72px 0 72px 64px; max-width: 560px; display: grid; gap: 26px; justify-items: start; }
+.closing h2 { font-size: clamp(2.4rem, 4.6vw, 3.9rem); line-height: 1.04; letter-spacing: -0.035em; }
+.closing h2 .violet { color: #a78bfa; }
+.closing p { color: var(--muted); font-size: 17px; line-height: 1.65; max-width: 420px; }
+.closing .btn-lg { padding: 18px 32px; font-size: 17px; }
+.closing .checks { font-size: 15px; color: rgba(255, 255, 255, .78); gap: 14px; }
+.collage { position: absolute; top: 0; bottom: 0; right: 0; width: 62%; z-index: 1; display: grid; grid-template-columns: repeat(5, 168px); justify-content: end; gap: 14px; padding-right: 26px; -webkit-mask-image: linear-gradient(90deg, transparent 0%, rgba(0,0,0,.25) 16%, #000 40%); mask-image: linear-gradient(90deg, transparent 0%, rgba(0,0,0,.25) 16%, #000 40%); }
+.col { display: flex; flex-direction: column; gap: 14px; animation: drift 9s ease-in-out infinite alternate; }
+.col:nth-child(1) { margin-top: 70px; }
+.col:nth-child(2) { margin-top: 120px; animation-delay: -3s; }
+.col:nth-child(3) { margin-top: 40px; animation-delay: -6s; }
+.col:nth-child(4) { margin-top: 110px; animation-delay: -1.5s; }
+.col:nth-child(5) { margin-top: 48px; animation-delay: -4.5s; }
+@keyframes drift { from { transform: translateY(-10px); } to { transform: translateY(10px); } }
+.still { aspect-ratio: 10 / 16; border-radius: 14px; overflow: hidden; border: 1px solid rgba(255, 255, 255, .16); background: #000; box-shadow: 0 20px 40px -20px rgba(0, 0, 0, .9), 0 0 30px -12px rgba(167, 139, 250, .55); }
+.still img { width: 100%; height: 100%; object-fit: cover; }
+.swoosh { position: absolute; left: 30%; right: -5%; bottom: -10px; height: 180px; z-index: 1; pointer-events: none; filter: blur(.5px); }
+@media (max-width: 960px) {
+  .closing { grid-template-columns: minmax(0, 1fr); min-height: 0; }
+  .closing-copy { padding: 44px 26px 8px; }
+  .collage { position: relative; width: auto; min-width: 0; overflow: hidden; height: 380px; padding: 0; grid-template-columns: repeat(5, 150px); justify-content: center; -webkit-mask-image: linear-gradient(180deg, #000 70%, transparent); mask-image: linear-gradient(180deg, #000 70%, transparent); }
+  .closing-copy { max-width: none; }
+  .col:nth-child(n) { margin-top: 20px; }
+  .col:nth-child(even) { margin-top: 70px; }
+}
+@media (max-width: 600px) { .collage { grid-template-columns: repeat(5, 118px); height: 320px; } }
+
+/* Footer */
+.footer-box { margin-block: 96px 32px; border: 1px solid var(--border); border-radius: 28px; padding: 40px; background: rgba(255, 255, 255, .015); }
+.footer-grid { display: grid; grid-template-columns: 1.3fr 1fr 1fr 1fr; gap: 32px; }
+.footer-grid img { height: 30px; width: auto; margin-bottom: 16px; }
+.footer-grid p { color: var(--muted); font-size: 14px; line-height: 1.7; max-width: 240px; }
+.fcol { display: grid; gap: 12px; align-content: start; font-size: 14px; color: var(--muted); }
+.fcol b { color: var(--violet-text); font-size: 11px; letter-spacing: .2em; text-transform: uppercase; margin-bottom: 4px; }
+.fcol a:hover { color: #fff; }
+.sel { user-select: all; color: #fff; }
+.footer-bottom { margin-top: 36px; padding-top: 20px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; color: var(--muted); font-size: 13px; }
+@media (max-width: 800px) { .footer-grid { grid-template-columns: 1fr 1fr; } .footer-box { padding: 28px 22px; } }
+@media (max-width: 480px) { .footer-grid { grid-template-columns: 1fr; } }
+
+/* Lightbox */
+.lightbox { border: 0; padding: 0; background: transparent; max-width: 94vw; width: auto; overflow: visible; }
+.lightbox::backdrop { background: rgba(0, 0, 0, .82); backdrop-filter: blur(4px); }
+.lightbox video { width: auto; max-width: 94vw; max-height: 86vh; border-radius: 14px; background: #000; border: 1px solid var(--border-strong); }
+.lightbox .close { position: absolute; right: 10px; top: 10px; z-index: 2; width: 36px; height: 36px; border-radius: 50%; border: 0; cursor: pointer; background: rgba(0, 0, 0, .7); color: #fff; font-size: 20px; }
+
+@media (max-width: 600px) { .section { padding-block: 72px; } }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; } }
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="wrap">
+    <a class="nav-logo" href="#top" aria-label="SnapQut home"><img src="/assets/logo-light.png" alt="SnapQut" width="640" height="162"></a>
+    <nav class="nav-links" aria-label="Sections">
+      <a href="#examples">Examples</a>
+      <a href="#features">Features</a>
+      <a href="#how">How it works</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#faq">FAQ</a>
+      <a href="/blog">Blog</a>
+    </nav>
+    <a class="btn" href="/get">Get SnapQut</a>
+  </div>
+</header>
+
+<main id="top">
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="wrap">
+      <div class="hero-copy">
+        <span class="badge"><span class="spark">✦</span> The video editing skill for Claude</span>
+        <h1>{{heroTitle}} <span class="violet">{{heroHighlight}}</span></h1>
+        <p class="lead">{{heroLead}}</p>
+        <div class="hero-cta">
+          <a class="btn btn-lg" href="/get"><span class="spark">✦</span> Get SnapQut for Claude · {{price}}</a>
+          <small>One-time purchase. No subscription.</small>
+        </div>
+      </div>
+
+      <div class="cmp-wrap">
+        <div class="cmp" id="cmp">
+          <video id="vBefore" src="/media/before.mp4" poster="/media/before.jpg" autoplay muted loop playsinline preload="auto" aria-label="Raw clip"></video>
+          <video id="vAfter" class="edited" src="/media/after.mp4" poster="/media/after.jpg" autoplay muted loop playsinline preload="auto" aria-label="Same clip edited by SnapQut"></video>
+          <span class="chip raw">RAW</span>
+          <span class="chip ed">EDITED</span>
+          <span class="divider" aria-hidden="true"></span>
+          <button class="handle" type="button" role="slider" aria-label="Compare raw and edited" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 7l-5 5 5 5M15 7l5 5-5 5"/></svg></button>
+          <button class="snd" type="button" data-snd="vAfter" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="m22 9-6 6M16 9l6 6"/></svg><span>Sound</span></button>
+        </div>
+        <p class="cmp-note">Drag the handle. Same clip, edited from one sentence typed into Claude.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Proof bar -->
+  <div class="proof">
+    <div class="wrap stats">
+      <div class="stat"><b>{{price}} once</b><span>no subscription</span></div>
+      <div class="stat"><b>3–8 minutes</b><span>per finished video</span></div>
+      <div class="stat"><b>Unlimited videos</b><span>no per-render charge</span></div>
+    </div>
+    <div class="marquee" aria-label="Formats SnapQut edits">
+      <div class="marquee-track">
+        <span>Instagram Reels</span><span>YouTube Shorts</span><span>TikTok</span><span>YouTube long-form</span><span>Podcast clips</span><span>UGC ads</span><span>Explainers</span><span>Brand promos</span>
+        <span aria-hidden="true">Instagram Reels</span><span aria-hidden="true">YouTube Shorts</span><span aria-hidden="true">TikTok</span><span aria-hidden="true">YouTube long-form</span><span aria-hidden="true">Podcast clips</span><span aria-hidden="true">UGC ads</span><span aria-hidden="true">Explainers</span><span aria-hidden="true">Brand promos</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Examples -->
+  <section class="section" id="examples">
+    <div class="wrap">
+      <div class="head">
+        <span class="eyebrow">✦ Made with SnapQut ✦</span>
+        <h2>Real videos, edited by Claude</h2>
+        <p class="sub">Talking heads, podcast clips, ads and promos, all edited from a sentence typed into Claude.</p>
+      </div>
+      <div class="carousel-wrap">
+      <button class="car-btn prev" type="button" aria-label="Previous videos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></button>
+      <button class="car-btn next" type="button" aria-label="Next videos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></button>
+      <div class="carousel" id="carousel">
+        <div class="carousel-track">
+          <button class="rc" type="button" data-src="/media/result-full.mp4" aria-label="Play Talking Head Reel with sound"><span class="tag">From the demo</span><video src="/media/result-full.mp4" poster="/media/result-full.jpg" muted loop playsinline preload="none"></video><span class="rc-label">Talking Head Reel<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/></svg></span></button>
+          <button class="rc" type="button" data-src="/media/sample-1.mp4" aria-label="Play Podcast before / after with sound"><video src="/media/sample-1.mp4" poster="/media/sample-1.jpg" muted loop playsinline preload="none"></video><span class="rc-label">Podcast before / after<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/></svg></span></button>
+          <button class="rc" type="button" data-src="/media/sample-2.mp4" aria-label="Play Talking head + B-roll with sound"><video src="/media/sample-2.mp4" poster="/media/sample-2.jpg" muted loop playsinline preload="none"></video><span class="rc-label">Talking head + B-roll<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/></svg></span></button>
+          <button class="rc" type="button" data-src="/media/sample-6.mp4" aria-label="Play Kinetic captions with sound"><video src="/media/sample-6.mp4" poster="/media/sample-6.jpg" muted loop playsinline preload="none"></video><span class="rc-label">Kinetic captions<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/></svg></span></button>
+          <button class="rc" type="button" data-src="/media/sample-3.mp4" aria-label="Play Animated explainer ad with sound"><video src="/media/sample-3.mp4" poster="/media/sample-3.jpg" muted loop playsinline preload="none"></video><span class="rc-label">Animated explainer ad<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/></svg></span></button>
+          <button class="rc" type="button" data-src="/media/after.mp4" aria-label="Play Word-locked captions with sound"><video src="/media/after.mp4" poster="/media/after.jpg" muted loop playsinline preload="none"></video><span class="rc-label">Word-locked captions<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/></svg></span></button>
+          <button class="rc" type="button" data-src="/media/sample-5.mp4" aria-label="Play Brand promo with sound"><video src="/media/sample-5.mp4" poster="/media/sample-5.jpg" muted loop playsinline preload="none"></video><span class="rc-label">Brand promo<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/></svg></span></button>
+          <button class="rc" type="button" data-src="/media/sample-4.mp4" aria-label="Play Motion graphics short with sound"><video src="/media/sample-4.mp4" poster="/media/sample-4.jpg" muted loop playsinline preload="none"></video><span class="rc-label">Motion graphics short<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/></svg></span></button>
+          <button class="rc" type="button" data-src="/media/result-full.mp4" aria-hidden="true" tabindex="-1" aria-label="Play Talking Head Reel with sound"><span class="tag">From the demo</span><video src="/media/result-full.mp4" poster="/media/result-full.jpg" muted loop playsinline preload="none"></video><span class="rc-label">Talking Head Reel<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/></svg></span></button>
+          <button class="rc" type="button" data-src="/media/sample-1.mp4" aria-hidden="true" tabindex="-1" aria-label="Play Podcast before / after with sound"><video src="/media/sample-1.mp4" poster="/media/sample-1.jpg" muted loop playsinline preload="none"></video><span class="rc-label">Podcast before / after<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/></svg></span></button>
+          <button class="rc" type="button" data-src="/media/sample-2.mp4" aria-hidden="true" tabindex="-1" aria-label="Play Talking head + B-roll with sound"><video src="/media/sample-2.mp4" poster="/media/sample-2.jpg" muted loop playsinline preload="none"></video><span class="rc-label">Talking head + B-roll<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/></svg></span></button>
+          <button class="rc" type="button" data-src="/media/sample-6.mp4" aria-hidden="true" tabindex="-1" aria-label="Play Kinetic captions with sound"><video src="/media/sample-6.mp4" poster="/media/sample-6.jpg" muted loop playsinline preload="none"></video><span class="rc-label">Kinetic captions<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/></svg></span></button>
+          <button class="rc" type="button" data-src="/media/sample-3.mp4" aria-hidden="true" tabindex="-1" aria-label="Play Animated explainer ad with sound"><video src="/media/sample-3.mp4" poster="/media/sample-3.jpg" muted loop playsinline preload="none"></video><span class="rc-label">Animated explainer ad<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/></svg></span></button>
+          <button class="rc" type="button" data-src="/media/after.mp4" aria-hidden="true" tabindex="-1" aria-label="Play Word-locked captions with sound"><video src="/media/after.mp4" poster="/media/after.jpg" muted loop playsinline preload="none"></video><span class="rc-label">Word-locked captions<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/></svg></span></button>
+          <button class="rc" type="button" data-src="/media/sample-5.mp4" aria-hidden="true" tabindex="-1" aria-label="Play Brand promo with sound"><video src="/media/sample-5.mp4" poster="/media/sample-5.jpg" muted loop playsinline preload="none"></video><span class="rc-label">Brand promo<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/></svg></span></button>
+          <button class="rc" type="button" data-src="/media/sample-4.mp4" aria-hidden="true" tabindex="-1" aria-label="Play Motion graphics short with sound"><video src="/media/sample-4.mp4" poster="/media/sample-4.jpg" muted loop playsinline preload="none"></video><span class="rc-label">Motion graphics short<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/></svg></span></button>
+        </div>
+      </div>
+      </div>
+      <p class="carousel-note">Drag, swipe or use the arrows. Click any video to watch it with sound.</p>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section class="section" id="features" style="padding-top:0">
+    <div class="wrap">
+      <div class="head">
+        <span class="eyebrow">Features</span>
+        <h2>Everything you need to make finished videos.</h2>
+        <p class="sub">It starts with one sentence. Everything else follows from it.</p>
+      </div>
+
+      <div class="fx-hero">
+        <div class="fx-inner">
+          <div class="fx-copy">
+            <span class="fx-badge"><span class="spark">✦</span> The core feature</span>
+            <h3>Describe it in <span class="grad">plain English</span></h3>
+            <p>Type what you want the way you'd brief a human editor. SnapQut works out the format, tone and structure from your footage and your words.</p>
+            <div class="try">
+              <small>Try saying</small>
+              <div class="try-chips" id="tryChips"><button class="try-chip" type="button" data-i="0">Make this a fast-paced Reel with captions</button><button class="try-chip" type="button" data-i="1">Cut the pauses and add B-roll</button><button class="try-chip" type="button" data-i="2">Edit this like the 4 videos in /styles</button><button class="try-chip" type="button" data-i="3">Turn this into a 30-second UGC ad</button></div>
+            </div>
+            <ul class="fx-ticks"><li>No forms</li><li>No settings</li><li>No timeline</li></ul>
+          </div>
+          <div class="fx-frame"><div class="scr" data-scene="3" data-hero="1" role="img" aria-label="Animation: typing one sentence"><div class="win-bar"><i></i><i></i><i></i><span>Claude · SnapQut</span></div><div class="greet"><em>✦</em>What should we make today?</div><div class="composer"><div class="c-file on up done"><img src="/media/before.jpg" alt=""><div><b>raw-clip.mp4</b><small>MP4 · 9.3 MB</small><span class="bar"><i></i></span></div><em class="ok">Uploaded</em></div><div class="c-input"><span class="typed"></span><span class="caret"></span><span class="ph">Describe the video you want…</span></div><div class="c-row"><span class="c-plus">+</span><span class="c-folder active"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg><b>SnapQut</b></span><span class="c-send"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg></span></div></div><div class="msg">Make this video with caption and choose the best template above you think is the best</div><div class="think"><span class="spin"></span>SnapQut is editing your video…</div><span class="cur" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 2l16 9.5-7 1.6-3.6 6.9z" fill="#fff" stroke="#000" stroke-width="1.2" stroke-linejoin="round"/></svg></span></div></div>
+        </div>
+      </div>
+
+      <div class="tl" id="timeline">
+        <div class="tl-line" aria-hidden="true"><i class="tl-fill"></i></div>
+      <div class="tl-item left">
+        <article class="card">
+          <div class="card-head"><h3>Captions locked to every word</h3><p>Captions sync to each spoken word, with key words highlighted for impact.</p></div>
+          <div class="media">
+            <div class="phones">
+              <div class="ph sm"><img src="/media/before.jpg" alt="Raw frame without captions" loading="lazy"></div>
+              <div class="ph"><video class="autoplay" src="/media/after.mp4" poster="/media/after.jpg" muted loop playsinline preload="none"></video></div>
+            </div>
+          </div>
+        </article>
+        <span class="tl-node" aria-hidden="true"></span>
+      </div>
+      <div class="tl-item right">
+        <article class="card">
+          <div class="card-head"><h3>Learns any creator's style</h3><p>Give it 3 to 6 videos you like. It studies their cuts, pacing, captions and B-roll, then edits yours the same way.</p></div>
+          <div class="media">
+            <div class="phones">
+              <div class="ph sm"><img src="/media/sample-2.jpg" alt="Style reference: talking head with B-roll" loading="lazy"></div>
+              <div class="ph"><video class="autoplay" src="/media/sample-6.mp4" poster="/media/sample-6.jpg" muted loop playsinline preload="none"></video></div>
+              <div class="ph sm"><img src="/media/sample-1.jpg" alt="Style reference: podcast clip" loading="lazy"></div>
+            </div>
+          </div>
+        </article>
+        <span class="tl-node" aria-hidden="true"></span>
+      </div>
+      <div class="tl-item left">
+        <article class="card">
+          <div class="card-head"><h3>Ads, explainers and promos</h3><p>Built-in ad structures: PAS, AIDA, Before-After-Bridge and UGC-style ads.</p></div>
+          <div class="media">
+            <div class="phones">
+              <div class="ph sm"><img src="/media/sample-5.jpg" alt="Brand promo example" loading="lazy"></div>
+              <div class="ph"><video class="autoplay" src="/media/sample-3.mp4" poster="/media/sample-3.jpg" muted loop playsinline preload="none"></video></div>
+              <div class="ph sm"><img src="/media/sample-4.jpg" alt="Motion graphics example" loading="lazy"></div>
+            </div>
+          </div>
+        </article>
+        <span class="tl-node" aria-hidden="true"></span>
+      </div>
+      <div class="tl-item right">
+        <article class="card">
+          <div class="card-head"><h3>Asks only when it needs you</h3><p>Claude makes the editing decisions it can and checks its own preview frames before rendering.</p></div>
+          <div class="media"><div class="ask-mock"><div class="ask-q"><span class="spark">✦</span> Include background music?</div><div class="ask-btns"><span class="yes">Yes</span><span>No</span></div><small>Everything else, Claude decides on its own.</small></div></div>
+        </article>
+        <span class="tl-node" aria-hidden="true"></span>
+      </div>
+      <div class="tl-item left">
+        <article class="card">
+          <div class="card-head"><h3>Pay once, edit forever</h3><p>One payment covers every workflow, long-form editing and unlimited renders.</p></div>
+          <div class="media">
+            <div class="price-mock"><div>
+              <small class="plan-name">SnapQut for Claude</small>
+              <b>{{price}}</b>
+              <span>Subscription <i>None</i></span>
+              <span>Videos <i>Unlimited</i></span>
+            </div></div>
+          </div>
+        </article>
+        <span class="tl-node" aria-hidden="true"></span>
+      </div>
+        <div class="tl-end"><span class="spark">✦</span> Ready to post</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- How it works -->
+  <section class="section" id="how" style="padding-top:0">
+    <div class="wrap">
+      <div class="how-head">
+        <span class="eyebrow" style="margin-bottom:0">How it works</span>
+        <h2>Just tell Claude what you want</h2>
+        <p>No timelines. No complicated settings. Four steps from a real session, from raw clip to finished Reel.</p>
+      </div>
+      <article class="zig">
+        <div class="zig-media"><div class="scr" data-scene="1" role="img" aria-label="Animation: choosing the SnapQut folder in Claude"><div class="win-bar"><i></i><i></i><i></i><span>Claude · SnapQut</span></div><div class="greet"><em>✦</em>What should we make today?</div><div class="composer"><div class="c-file"><img src="/media/before.jpg" alt=""><div><b>raw-clip.mp4</b><small>MP4 · 9.3 MB</small><span class="bar"><i></i></span></div><em class="ok">Uploaded</em></div><div class="c-input"><span class="typed"></span><span class="caret"></span><span class="ph">Describe the video you want…</span></div><div class="c-row"><span class="c-plus">+</span><span class="c-folder"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg><b>No folder</b></span><span class="c-send"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg></span></div></div><div class="dlg"><div class="dlg-side"><small>Favourites</small><span>Desktop</span><span>Documents</span><span>Downloads</span></div><div class="dlg-main"><div class="dlg-path">Projects</div><span class="row"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Client work</span><span class="row"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Footage</span><span class="row" data-t="pick"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>SnapQut</span><span class="row"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Archive</span><div class="dlg-btns"><span>Cancel</span><span class="btn-o">Open</span></div></div></div><div class="toast"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5L20 7"/></svg>Folder connected</div><span class="cur" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 2l16 9.5-7 1.6-3.6 6.9z" fill="#fff" stroke="#000" stroke-width="1.2" stroke-linejoin="round"/></svg></span></div></div>
+        <div class="zig-text"><span class="step-tag">Step 1 · Open Claude</span><h3>Pick your project folder</h3><p>Open Claude and choose the folder where SnapQut is installed. This tells Claude where your editing kit lives. It takes a few seconds.</p></div>
+      </article>
+      <article class="zig">
+        <div class="zig-media"><div class="scr" data-scene="2" role="img" aria-label="Animation: attaching a raw video"><div class="win-bar"><i></i><i></i><i></i><span>Claude · SnapQut</span></div><div class="greet"><em>✦</em>What should we make today?</div><div class="composer"><div class="c-file"><img src="/media/before.jpg" alt=""><div><b>raw-clip.mp4</b><small>MP4 · 9.3 MB</small><span class="bar"><i></i></span></div><em class="ok">Uploaded</em></div><div class="c-input"><span class="typed"></span><span class="caret"></span><span class="ph">Describe the video you want…</span></div><div class="c-row"><span class="c-plus">+</span><span class="c-folder active"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg><b>SnapQut</b></span><span class="c-send"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg></span></div></div><div class="menu"><span class="mi" data-t="add"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21 12-8.5 8.5a5 5 0 0 1-7-7L14 5a3.5 3.5 0 0 1 5 5l-8.5 8.5a2 2 0 0 1-3-3L15 8"/></svg>Add files or photos</span><span class="mi"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Add folder</span></div><span class="cur" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 2l16 9.5-7 1.6-3.6 6.9z" fill="#fff" stroke="#000" stroke-width="1.2" stroke-linejoin="round"/></svg></span></div></div>
+        <div class="zig-text"><span class="step-tag">Step 2 · Upload</span><h3>Drop in your raw video</h3><p>Click the + button and attach the clip straight from your computer. Any MP4 or MOV works, straight off your phone or camera. No importing, no media bins.</p></div>
+      </article>
+      <article class="zig">
+        <div class="zig-media"><div class="scr" data-scene="3" role="img" aria-label="Animation: typing one sentence"><div class="win-bar"><i></i><i></i><i></i><span>Claude · SnapQut</span></div><div class="greet"><em>✦</em>What should we make today?</div><div class="composer"><div class="c-file on up done"><img src="/media/before.jpg" alt=""><div><b>raw-clip.mp4</b><small>MP4 · 9.3 MB</small><span class="bar"><i></i></span></div><em class="ok">Uploaded</em></div><div class="c-input"><span class="typed"></span><span class="caret"></span><span class="ph">Describe the video you want…</span></div><div class="c-row"><span class="c-plus">+</span><span class="c-folder active"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg><b>SnapQut</b></span><span class="c-send"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg></span></div></div><div class="msg">Make this video with caption and choose the best template above you think is the best</div><div class="think"><span class="spin"></span>SnapQut is editing your video…</div><span class="cur" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 2l16 9.5-7 1.6-3.6 6.9z" fill="#fff" stroke="#000" stroke-width="1.2" stroke-linejoin="round"/></svg></span></div></div>
+        <div class="zig-text"><span class="step-tag">Step 3 · Plain English</span><h3>Describe it, don’t configure it</h3><p>Type what you want in your own words and press enter. No forms, no settings, no need to know which editing tools to use. This is the exact sentence from the demo:</p><span class="step-prompt">Make this video with caption and choose the best template above you think is the best</span></div>
+      </article>
+      <article class="zig">
+        <div class="zig-media"><div class="scr" data-scene="4" role="img" aria-label="Animation: SnapQut edits and renders the video"><div class="win-bar"><i></i><i></i><i></i><span>Claude · SnapQut</span></div><div class="msg on">Make this video with caption and choose the best template above you think is the best</div><ul class="work"><li><span class="st"></span>Transcribing the clip</li><li><span class="st"></span>Style: Talking Head Reel</li><li><span class="st"></span>Cutting 1.4 s of pauses</li><li><span class="st"></span>Adding word-locked captions</li><li><span class="st"></span>Rendering 9:16<span class="bar"><i></i></span></li></ul><div class="res"><div class="res-ph"><video src="/media/after.mp4" poster="/media/after.jpg" muted loop playsinline preload="none"></video></div><b>share-your-voice-9x16.mp4</b><small>61.5 s · Ready</small></div></div></div>
+        <div class="zig-text"><span class="step-tag">Step 4 · Ready video</span><h3>Get your finished video</h3><p>SnapQut transcribes, picks a style, cuts the pauses, adds word-locked captions and renders. It asks only when it genuinely needs your input. This one was ready in about 3 minutes.</p></div>
+      </article>
+      <div class="how-foot"><a class="btn btn-lg" href="/get"><span class="spark">✦</span> Get SnapQut · {{price}}</a><small>One-time purchase. No subscription.</small></div>
+    </div>
+  </section>
+
+  <!-- Testimonials -->
+  <section class="section" style="padding-top:0">
+    <div class="wrap">
+      <div class="head">
+        <span class="eyebrow">✦ Reviews ✦</span>
+        <h2>Creators who stopped editing</h2>
+      </div>
+      <div class="tiles">
+        {{{testimonialsHtml}}}
+      </div>
+    </div>
+  </section>
+
+  <!-- Pricing -->
+  <section class="section" id="pricing" style="padding-top:0">
+    <div class="wrap">
+      <div class="head">
+        <span class="eyebrow">✦ Pricing ✦</span>
+        <h2>One price. No subscription.</h2>
+        <p class="sub">Buy once and use SnapQut for every video you make.</p>
+      </div>
+      <div class="plan">
+        <div class="plan-top"><span class="plan-name">SnapQut for Claude</span><span class="hot">{{priceNotice}}</span></div>
+        <div class="price"><b>{{price}}</b><s>{{comparePrice}}</s><span>one-time payment</span></div>
+        <ul class="checks">
+          <li>Every built-in video workflow</li>
+          <li>Style-learning from 3 to 6 reference videos</li>
+          <li>Long-form editing</li>
+          <li>Ad formats: PAS, AIDA, Before-After-Bridge, UGC</li>
+          <li>Unlimited videos, no per-render charge</li>
+        </ul>
+        <a class="btn btn-lg" href="/get" id="buy"><span class="spark">✦</span> Get SnapQut for Claude</a>
+        <p class="fine">Secure checkout with Razorpay (PCI-DSS compliant). Refund and licence questions are answered by a real person.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="section" id="faq" style="padding-top:0">
+    <div class="wrap">
+      <div class="head">
+        <span class="eyebrow">✦ FAQ ✦</span>
+        <h2>Frequently asked questions</h2>
+        <p class="sub">Everything you need to know about SnapQut.</p>
+      </div>
+      <div class="faq">
+        {{{faqHtml}}}
+      </div>
+    </div>
+  </section>
+
+  <!-- Closing CTA -->
+  <section class="wrap">
+    <div class="closing">
+      <div class="closing-copy">
+        <h2>Ready to create <span class="violet">edited videos</span> that stand out?</h2>
+        <p>SnapQut turns any raw clip into a captioned, ready-to-post video in minutes. You just type one sentence.</p>
+        <a class="btn btn-lg" href="/get"><span class="spark">✦</span> Get SnapQut · {{price}}</a>
+        <ul class="checks">
+          <li>Word-locked captions in your style</li>
+          <li>Short-form, long-form and ads</li>
+          <li>One payment, unlimited videos</li>
+        </ul>
+      </div>
+      <div class="collage" aria-hidden="true"><div class="col"><div class="still"><img src="/media/stills/still-1.jpg" alt="" loading="lazy" width="360" height="640"></div><div class="still"><img src="/media/stills/still-2.jpg" alt="" loading="lazy" width="360" height="640"></div></div><div class="col"><div class="still"><img src="/media/stills/still-3.jpg" alt="" loading="lazy" width="360" height="640"></div><div class="still"><img src="/media/stills/still-4.jpg" alt="" loading="lazy" width="360" height="640"></div></div><div class="col"><div class="still"><img src="/media/stills/still-5.jpg" alt="" loading="lazy" width="360" height="640"></div><div class="still"><img src="/media/stills/still-6.jpg" alt="" loading="lazy" width="360" height="640"></div></div><div class="col"><div class="still"><img src="/media/stills/still-7.jpg" alt="" loading="lazy" width="360" height="640"></div><div class="still"><img src="/media/stills/still-8.jpg" alt="" loading="lazy" width="360" height="640"></div></div><div class="col"><div class="still"><img src="/media/stills/still-9.jpg" alt="" loading="lazy" width="360" height="640"></div><div class="still"><img src="/media/stills/still-10.jpg" alt="" loading="lazy" width="360" height="640"></div></div></div>
+      <svg class="swoosh" viewBox="0 0 800 180" preserveAspectRatio="none" aria-hidden="true">
+        <defs><linearGradient id="sw" x1="0" x2="1"><stop offset="0" stop-color="#8b5cf6" stop-opacity="0"/><stop offset=".5" stop-color="#a78bfa" stop-opacity=".9"/><stop offset="1" stop-color="#c084fc" stop-opacity=".2"/></linearGradient></defs>
+        <path d="M0 170 C 220 150, 420 60, 800 40" fill="none" stroke="url(#sw)" stroke-width="2"/>
+        <path d="M0 178 C 240 160, 460 80, 800 70" fill="none" stroke="url(#sw)" stroke-width="1.2" opacity=".7"/>
+        <path d="M60 180 C 300 165, 500 110, 800 105" fill="none" stroke="url(#sw)" stroke-width="1" opacity=".45"/>
+      </svg>
+    </div>
+  </section>
+</main>
+
+<footer class="wrap">
+  <div class="footer-box">
+    <div class="footer-grid">
+      <div><img src="/assets/logo-light.png" alt="SnapQut" width="640" height="162"><p>The video editing skill for Claude. Turn raw footage into finished videos with one sentence.</p></div>
+      <div class="fcol"><b>Product</b><a href="#features">Features</a><a href="#how">How it works</a><a href="#examples">Examples</a><a href="#pricing">Pricing</a><a href="/blog">Blog</a><a href="/download">Download (buyers)</a></div>
+      <div class="fcol"><b>Support</b><span>Email: <span class="sel">{{supportEmail}}</span></span><span>WhatsApp: <span class="sel">{{whatsapp}}</span></span><a href="#faq">FAQ</a></div>
+      <div class="fcol"><b>Legal</b><a href="/privacy">Privacy policy</a><a href="/terms">Terms of service</a><a href="/refund-policy">Refund &amp; cancellation</a><a href="/shipping-policy">Shipping &amp; delivery</a><a href="/contact">Contact us</a></div>
+    </div>
+    <div class="footer-bottom"><span>© 2026 SnapQut. All rights reserved.</span><span>Made for creators who'd rather post than edit.</span></div>
+  </div>
+</footer>
+
+<dialog class="lightbox" id="lightbox" aria-label="Video">
+  <button class="close" type="button" aria-label="Close">×</button>
+  <video id="lbVideo" controls playsinline></video>
+</dialog>
+
+<script>
+(function () {
+  function visible(el, on, off, th) {
+    if (!('IntersectionObserver' in window)) { on(); return; }
+    new IntersectionObserver(function (es) { es.forEach(function (e) { e.isIntersecting ? on() : off(); }); }, { threshold: th || 0.3 }).observe(el);
+  }
+  function safePlay(v) { var p = v.play(); if (p && p.catch) p.catch(function () {}); }
+
+  // Hero before/after: keep the two clips in sync, one sound at a time
+  var vb = document.getElementById('vBefore'), va = document.getElementById('vAfter');
+  var muteIcon = '<path d="M11 5 6 9H3v6h3l5 4z"/><path d="m22 9-6 6M16 9l6 6"/>';
+  var onIcon = '<path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M19 5a10 10 0 0 1 0 14"/>';
+  setInterval(function () { if (!va.paused && Math.abs(vb.currentTime - va.currentTime) > 0.25) vb.currentTime = va.currentTime; }, 1000);
+  var sndBtns = document.querySelectorAll('[data-snd]');
+  function setSound(btn, on) {
+    var v = document.getElementById(btn.getAttribute('data-snd'));
+    v.muted = !on; btn.setAttribute('aria-pressed', String(on));
+    btn.querySelector('svg').innerHTML = on ? onIcon : muteIcon;
+  }
+  sndBtns.forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var turnOn = btn.getAttribute('aria-pressed') !== 'true';
+      sndBtns.forEach(function (b) { setSound(b, false); });
+      if (turnOn) { stopReels(); setSound(btn, true); vb.currentTime = 0; va.currentTime = 0; safePlay(vb); safePlay(va); }
+    });
+  });
+  visible(va, function () { safePlay(vb); safePlay(va); }, function () { vb.pause(); va.pause(); });
+
+  // Raw / edited comparison slider
+  var cmp = document.getElementById('cmp'), handle = cmp.querySelector('.handle'), cmpDrag = false, touched = false;
+  function setPos(pct) {
+    pct = Math.max(0, Math.min(100, pct));
+    cmp.style.setProperty('--pos', pct + '%');
+    handle.setAttribute('aria-valuenow', String(Math.round(pct)));
+  }
+  function fromEvent(e) { var r = cmp.getBoundingClientRect(); setPos((e.clientX - r.left) / r.width * 100); }
+  cmp.addEventListener('pointerdown', function (e) {
+    if (e.target.closest('.snd')) return;
+    cmpDrag = true; touched = true; cmp.classList.add('dragging'); fromEvent(e);
+    if (cmp.setPointerCapture) cmp.setPointerCapture(e.pointerId);
+  });
+  cmp.addEventListener('pointermove', function (e) { if (cmpDrag) fromEvent(e); });
+  function cmpEnd() { cmpDrag = false; cmp.classList.remove('dragging'); }
+  cmp.addEventListener('pointerup', cmpEnd);
+  cmp.addEventListener('pointercancel', cmpEnd);
+  handle.addEventListener('keydown', function (e) {
+    var now = parseFloat(handle.getAttribute('aria-valuenow'));
+    if (e.key === 'ArrowLeft') { e.preventDefault(); touched = true; setPos(now - 5); }
+    if (e.key === 'ArrowRight') { e.preventDefault(); touched = true; setPos(now + 5); }
+  });
+  // One gentle sweep on load so people see it moves, then it's theirs
+  if (!window.matchMedia || !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    var t0 = null;
+    requestAnimationFrame(function sweep(t) {
+      if (touched) return;
+      if (t0 === null) t0 = t + 900;
+      var k = Math.max(0, (t - t0) / 2200);
+      if (k >= 1) { setPos(50); return; }
+      setPos(50 + Math.sin(k * Math.PI * 2) * 28);
+      requestAnimationFrame(sweep);
+    });
+  }
+
+  // Feature panels: play while on screen
+  document.querySelectorAll('video.autoplay').forEach(function (v) {
+    visible(v, function () { safePlay(v); }, function () { v.pause(); });
+  });
+
+  // Motion-graphic scenes: each plays a scripted timeline on loop while on screen
+  var PROMPT = 'Make this video with caption and choose the best template above you think is the best';
+  var TIMELINES = {
+    '1': [[500, 'move', '.c-folder'], [1100, 'click'], [1250, 'on', '.dlg'], [2000, 'move', '[data-t=pick]'], [2450, 'on', '[data-t=pick]', 'sel'], [2900, 'move', '.btn-o'], [3350, 'click'],
+          [3500, 'off', '.dlg'], [3550, 'on', '.c-folder', 'active'], [3550, 'text', '.c-folder b', 'SnapQut'], [3650, 'on', '.toast'], [3900, 'move', '.greet'], [5200, 'off', '.toast'], [6200, 'end']],
+    '2': [[500, 'move', '.c-plus'], [1100, 'click'], [1200, 'on', '.menu'], [1800, 'move', '[data-t=add]'], [2100, 'on', '[data-t=add]', 'hl'], [2400, 'click'], [2500, 'off', '.menu'],
+          [2550, 'on', '.c-file'], [2650, 'on', '.c-file', 'up'], [3000, 'move', '.greet'], [4100, 'on', '.c-file', 'done'], [6200, 'end']],
+    '3': [[400, 'move', '.c-input'], [900, 'click'], [1000, 'type', '.typed', PROMPT], [4500, 'on', '.c-send', 'ready'], [4700, 'move', '.c-send'], [5200, 'click'],
+          [5300, 'on', '.composer', 'gone'], [5400, 'on', '.msg'], [5900, 'on', '.think'], [7600, 'end']],
+    '4': [[400, 'step', 0], [1300, 'step', 1], [2200, 'step', 2], [3100, 'step', 3], [4000, 'step', 4], [5500, 'step', 5], [5600, 'on', '.res'], [5700, 'play', '.res video'], [11500, 'end']]
+  };
+  var reduceMotionAll = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function Scene(root) {
+    this.root = root; this.html = root.innerHTML; this.tl = TIMELINES[root.getAttribute('data-scene')];
+    this.timers = []; this.running = false; this.visible = false; this.target = null;
+    this.chips = root.getAttribute('data-hero') ? Array.prototype.slice.call(document.querySelectorAll('.try-chip')) : null;
+    this.idx = 0; this.prompt = null;
+  }
+  Scene.prototype.q = function (sel) { return this.root.querySelector(sel); };
+  Scene.prototype.act = function (a) {
+    var el = typeof a[2] === 'string' ? this.q(a[2]) : null, cur = this.q('.cur');
+    switch (a[1]) {
+      case 'move':
+        if (!el || !cur) return;
+        var r = this.root.getBoundingClientRect(), e = el.getBoundingClientRect();
+        cur.style.left = (e.left - r.left + e.width / 2) + 'px'; cur.style.top = (e.top - r.top + e.height / 2) + 'px';
+        this.target = el; break;
+      case 'click':
+        if (cur) { cur.classList.add('click'); setTimeout(function () { cur.classList.remove('click'); }, 300); }
+        if (this.target) { var t = this.target; t.classList.add('press'); setTimeout(function () { t.classList.remove('press'); }, 180); }
+        break;
+      case 'on': if (el) el.classList.add(a[3] || 'on'); break;
+      case 'off': if (el) el.classList.remove(a[3] || 'on'); break;
+      case 'text': if (el) el.textContent = a[3]; break;
+      case 'type':
+        this.q('.c-input').classList.add('typing');
+        var i = 0, txt = this.prompt || a[3], ms = Math.max(18, Math.floor(3200 / txt.length));
+        var iv = setInterval(function () { i++; el.textContent = txt.slice(0, i); if (i >= txt.length) clearInterval(iv); }, ms);
+        this.timers.push(iv); break;
+      case 'step':
+        this.root.querySelectorAll('.work li').forEach(function (li, j) { li.classList.toggle('done', j < a[2]); li.classList.toggle('run', j === a[2]); });
+        break;
+      case 'play': if (el) safePlay(el); break;
+      case 'end': this.stop(); if (this.chips) this.idx = (this.idx + 1) % this.chips.length; if (this.visible) this.start(); break;
+    }
+  };
+  Scene.prototype.start = function () {
+    var self = this; this.running = true;
+    if (this.chips) {
+      var idx = this.idx;
+      this.prompt = this.chips[idx].textContent;
+      this.chips.forEach(function (c, j) { c.classList.toggle('on', j === idx); });
+      var m = this.q('.msg'); if (m) m.textContent = this.prompt;
+    }
+    if (reduceMotionAll) {
+      this.tl.forEach(function (a) {
+        if (a[1] === 'type') { self.q('.c-input').classList.add('typing'); self.q(a[2]).textContent = a[3]; }
+        else if (['move', 'click', 'end'].indexOf(a[1]) < 0) self.act(a);
+      });
+      return;
+    }
+    this.tl.forEach(function (a) { self.timers.push(setTimeout(function () { self.act(a); }, a[0])); });
+  };
+  Scene.prototype.stop = function () {
+    this.timers.forEach(function (t) { clearTimeout(t); clearInterval(t); }); this.timers = [];
+    this.root.innerHTML = this.html; this.target = null; this.running = false;
+  };
+  document.querySelectorAll('.scr[data-scene]').forEach(function (root) {
+    var sc = new Scene(root);
+    visible(root, function () { sc.visible = true; if (!sc.running) sc.start(); }, function () { sc.visible = false; if (sc.running) sc.stop(); }, 0.35);
+    if (sc.chips) sc.chips.forEach(function (c, j) {
+      c.addEventListener('click', function () { sc.stop(); sc.idx = j; sc.start(); });
+    });
+  });
+
+  // Features timeline: the line fills as you scroll; nodes light up as it reaches them
+  var tl = document.getElementById('timeline');
+  if (tl) {
+    var fill = tl.querySelector('.tl-fill'), line = tl.querySelector('.tl-line');
+    var tlItems = Array.prototype.slice.call(tl.querySelectorAll('.tl-item'));
+    var tlEnd = tl.querySelector('.tl-end'), ticking = false;
+    function tlUpdate() {
+      ticking = false;
+      var lr = line.getBoundingClientRect(), mark = window.innerHeight * 0.62;
+      var prog = Math.max(0, Math.min(1, (mark - lr.top) / lr.height));
+      fill.style.height = (prog * 100) + '%';
+      var tip = lr.top + prog * lr.height;
+      tlItems.forEach(function (it) {
+        var n = it.querySelector('.tl-node').getBoundingClientRect();
+        it.classList.toggle('lit', n.top + n.height / 2 <= tip + 1);
+      });
+      tlEnd.classList.toggle('lit', prog >= 0.999);
+    }
+    function tlQueue() { if (!ticking) { ticking = true; requestAnimationFrame(tlUpdate); } }
+    window.addEventListener('scroll', tlQueue, { passive: true });
+    window.addEventListener('resize', tlQueue);
+    tlUpdate();
+  }
+
+  // Carousel: play cards only while visible, click opens with sound
+  function stopReels() {}
+  var rcs = Array.prototype.slice.call(document.querySelectorAll('.rc'));
+  var car = document.getElementById('carousel');
+  if ('IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function (es) {
+      es.forEach(function (e) { var v = e.target.querySelector('video'); e.isIntersecting ? safePlay(v) : v.pause(); });
+    }, { threshold: 0.1 });
+    rcs.forEach(function (c) { io.observe(c); });
+  } else { rcs.forEach(function (c) { safePlay(c.querySelector('video')); }); }
+  // Infinite loop: auto-scrolls, wraps seamlessly both ways, drag/swipe and arrows
+  var track = car.querySelector('.carousel-track');
+  var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var canHover = window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+  var half = rcs.length / 2, setW = 0, x = 0, speed = 38, hovering = false, dragging = false, moved = 0;
+  var startX = 0, startPos = 0, glide = null, last = performance.now();
+  var cardW = 210, viewW = 1;
+  function measure() { setW = rcs[half].offsetLeft - rcs[0].offsetLeft; cardW = rcs[0].offsetWidth; viewW = car.clientWidth || 1; }
+  // Oval drum: the middle card is closest; cards turn away, shrink and dim toward the edges
+  function curve() {
+    var mid = viewW / 2;
+    for (var i = 0; i < rcs.length; i++) {
+      var c = rcs[i], cx = c.offsetLeft + x + cardW / 2;
+      var d = Math.max(-1.4, Math.min(1.4, (cx - mid) / mid));
+      var a = Math.abs(d);
+      c.style.transform = 'translate3d(0,' + (a * a * 26).toFixed(1) + 'px,' + (-a * a * 140).toFixed(1) + 'px) rotateY(' + (d * 34).toFixed(2) + 'deg) scale(' + (1 - a * 0.12).toFixed(3) + ')';
+      c.style.opacity = (1 - Math.min(0.55, a * a * 0.4)).toFixed(3);
+      c.style.zIndex = String(100 - Math.round(a * 50));
+    }
+  }
+  function wrap() { if (!setW) return; while (x <= -setW) x += setW; while (x > 0) x -= setW; }
+  function render() { wrap(); track.style.transform = 'translate3d(' + x + 'px,0,0)'; curve(); }
+  function tick(now) {
+    var dt = Math.min(0.05, (now - last) / 1000); last = now;
+    if (glide) {
+      var t = Math.min(1, (now - glide.t0) / 450), e = 1 - Math.pow(1 - t, 3);
+      x = glide.from + (glide.to - glide.from) * e; if (t >= 1) glide = null;
+    } else if (!dragging && !(hovering && canHover) && !reduceMotion && !(box && box.open)) {
+      x -= speed * dt;
+    }
+    render(); requestAnimationFrame(tick);
+  }
+  function step(dir) { var w = rcs[1].offsetLeft - rcs[0].offsetLeft; glide = { from: x, to: x - dir * w * 2, t0: performance.now() }; }
+  document.querySelector('.car-btn.prev').addEventListener('click', function () { step(-1); });
+  document.querySelector('.car-btn.next').addEventListener('click', function () { step(1); });
+  car.addEventListener('mouseenter', function () { hovering = true; });
+  car.addEventListener('mouseleave', function () { hovering = false; });
+  car.addEventListener('pointerdown', function (e) {
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
+    dragging = true; moved = 0; startX = e.clientX; startPos = x; glide = null;
+    car.classList.add('dragging');
+  });
+  window.addEventListener('pointermove', function (e) {
+    if (!dragging) return;
+    var dx = e.clientX - startX; moved = Math.max(moved, Math.abs(dx)); x = startPos + dx;
+  });
+  function endDrag() { if (dragging) { dragging = false; car.classList.remove('dragging'); } }
+  window.addEventListener('pointerup', endDrag);
+  window.addEventListener('pointercancel', endDrag);
+  car.addEventListener('dragstart', function (e) { e.preventDefault(); });
+  rcs.forEach(function (c) {
+    c.addEventListener('click', function (e) {
+      if (moved > 6) { e.preventDefault(); moved = 0; return; }
+      sndBtns.forEach(function (b) { setSound(b, false); });
+      openBox(c.getAttribute('data-src'), false);
+    });
+  });
+  window.addEventListener('resize', measure);
+  window.addEventListener('load', measure);
+  measure(); requestAnimationFrame(tick);
+
+  // Lightbox for step clips
+  var box = document.getElementById('lightbox'), lbv = document.getElementById('lbVideo');
+  function openBox(src, muted) {
+    if (!box.showModal) return;
+    lbv.src = src; lbv.muted = !!muted; lbv.loop = true; box.showModal(); safePlay(lbv); vb.pause(); va.pause();
+  }
+  function closeBox() { lbv.pause(); lbv.removeAttribute('src'); lbv.load(); if (box.open) box.close(); safePlay(vb); safePlay(va); }
+  box.querySelector('.close').addEventListener('click', closeBox);
+  box.addEventListener('click', function (e) { if (e.target === box) closeBox(); });
+  box.addEventListener('cancel', function (e) { e.preventDefault(); closeBox(); });
+})();
+</script>
+</body>
+</html>

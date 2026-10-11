@@ -1,0 +1,51 @@
+# Production setup: Starter plan + persistent disk (keeps orders, keys and settings across restarts).
+# For a quick FREE test deploy, create the web service by hand instead (see LAUNCH-CHECKLIST.md) — free instances have no disk.
+services:
+  - type: web
+    name: snapqut
+    runtime: node
+    plan: starter            # persistent disks need a paid instance
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /robots.txt
+    disk:
+      name: snapqut-data
+      mountPath: /var/data
+      sizeGB: 1
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NODE_VERSION
+        value: "24"
+      - key: DATA_DIR
+        value: /var/data
+      - key: UPLOAD_DIR
+        value: /var/data/uploads
+      - key: PUBLIC_URL
+        sync: false
+      - key: ADMIN_EMAIL
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: CASHFREE_APP_ID
+        sync: false
+      - key: CASHFREE_SECRET_KEY
+        sync: false
+      - key: CASHFREE_ENV
+        value: sandbox
+      - key: RAZORPAY_KEY_ID
+        sync: false
+      - key: RAZORPAY_KEY_SECRET
+        sync: false
+      - key: RAZORPAY_WEBHOOK_SECRET
+        sync: false
+      - key: RESEND_API_KEY
+        sync: false
+      - key: R2_ACCOUNT_ID
+        sync: false
+      - key: R2_ACCESS_KEY_ID
+        sync: false
+      - key: R2_SECRET_ACCESS_KEY
+        sync: false
+      - key: R2_BUCKET
+        value: snapqut-kit

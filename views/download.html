@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Download SnapQut</title>
+<meta name="description" content="Download SnapQut with the access key from your purchase email.">
+<meta name="robots" content="noindex">
+<link rel="icon" type="image/png" href="/assets/favicon.png">
+<link rel="stylesheet" href="/assets/blog.css">
+<style>
+/* Download: one focused card. Enter key → get a private, short-lived link. */
+.dl { position: relative; overflow: hidden; padding-block: 64px 0; }
+.dl::before { content: ""; position: absolute; top: -300px; left: 50%; width: 1100px; height: 700px; transform: translateX(-50%); background: radial-gradient(closest-side, rgba(124, 58, 237, .26), transparent 72%); pointer-events: none; }
+.dl .wrap { position: relative; max-width: 620px; display: grid; gap: 28px; }
+.dl-head { display: grid; justify-items: center; gap: 14px; text-align: center; }
+.dl-head h1 { font-size: clamp(2.2rem, 5vw, 3rem); line-height: 1.08; }
+.dl-head p { color: var(--muted); font-size: 17px; max-width: 480px; }
+.panel { border-radius: 22px; padding: 1.5px; background: linear-gradient(140deg, rgba(139, 92, 246, .9), rgba(45, 212, 191, .45) 50%, rgba(139, 92, 246, .35)); box-shadow: 0 0 80px -25px rgba(139, 92, 246, .7); }
+.panel-inner { border-radius: 20.5px; background: #0e0d1a; padding: 32px; display: grid; gap: 18px; }
+.panel h2 { font-size: 1.4rem; }
+.field { display: grid; gap: 8px; }
+.field label { font-size: 14px; font-weight: 600; }
+.field input { width: 100%; padding: 16px 18px; border-radius: 12px; border: 1px solid var(--border-strong); background: var(--panel); color: #fff; font: 600 18px/1.3 var(--mono); letter-spacing: .08em; text-transform: uppercase; }
+.field input.plain { font: 16px/1.3 var(--font); letter-spacing: 0; text-transform: none; }
+.field input::placeholder { color: rgba(255, 255, 255, .25); letter-spacing: .04em; }
+.field input:focus { outline: none; border-color: var(--violet); box-shadow: 0 0 0 4px rgba(139, 92, 246, .2); }
+.err { color: #fca5a5; font-size: 14px; min-height: 1em; line-height: 1.5; }
+.panel .btn-lg { width: 100%; padding-block: 17px; font-size: 16.5px; }
+.btn[disabled] { opacity: .55; cursor: wait; box-shadow: none; }
+.file { display: flex; align-items: center; gap: 14px; padding: 16px; border-radius: 14px; background: rgba(255, 255, 255, .03); border: 1px solid var(--border); }
+.file .ico { width: 46px; height: 46px; border-radius: 12px; display: grid; place-items: center; background: rgba(139, 92, 246, .16); color: var(--violet-text); flex: none; }
+.file .ico svg { width: 22px; height: 22px; }
+.file b { display: block; font-size: 16px; word-break: break-all; }
+.file small { color: var(--muted); font-size: 13px; }
+.ok { display: flex; gap: 10px; align-items: center; padding: 12px 14px; border-radius: 12px; background: rgba(74, 222, 128, .08); border: 1px solid rgba(74, 222, 128, .35); font-size: 14px; }
+.ok svg { width: 18px; height: 18px; color: #4ade80; flex: none; }
+.timer { color: var(--faint); font-size: 13px; text-align: center; font-variant-numeric: tabular-nums; }
+.steps { margin: 0; padding-left: 1.2em; display: grid; gap: 8px; color: rgba(255, 255, 255, .82); font-size: 14.5px; }
+.steps li::marker { color: var(--violet-text); font-weight: 700; }
+.help { display: grid; gap: 12px; padding: 22px 24px; border-radius: 18px; background: var(--card); border: 1px solid var(--border); }
+.help h2 { font-size: 1.05rem; }
+.help p { color: var(--muted); font-size: 14px; }
+.help form { display: flex; gap: 8px; flex-wrap: wrap; }
+.help form input { flex: 1 1 220px; padding: 12px 14px; border-radius: 10px; border: 1px solid var(--border-strong); background: var(--panel); color: #fff; font: 15px var(--font); }
+.help form input:focus { outline: none; border-color: var(--violet); }
+.help .btn { padding: 12px 18px; }
+.help .msg { font-size: 13.5px; color: var(--muted); min-height: 1em; }
+.link-btn { background: none; border: 0; padding: 0; color: var(--violet-text); font: 500 14px var(--font); cursor: pointer; text-decoration: underline; text-underline-offset: 2px; justify-self: center; }
+.spinner { width: 18px; height: 18px; border-radius: 50%; border: 2px solid rgba(255, 255, 255, .35); border-top-color: #fff; animation: spin .8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+<header class="nav">
+  <div class="wrap">
+    <a class="nav-logo" href="/" aria-label="SnapQut home"><img src="/assets/logo-light.png" alt="SnapQut" width="640" height="162"></a>
+    <nav class="nav-links" aria-label="Site">
+      <a href="/#features">Features</a>
+      <a href="/#how">How it works</a>
+      <a href="/blog">Blog</a>
+      <a href="/download" aria-current="page">Download</a>
+    </nav>
+    <a class="btn" href="/get">Get SnapQut</a>
+  </div>
+</header>
+
+<main class="dl">
+  <div class="wrap">
+    <div class="dl-head">
+      <span class="eyebrow">✦ For buyers ✦</span>
+      <h1>Download <span class="violet">SnapQut</span></h1>
+      <p>Enter the access key from your purchase email. You'll get a private download link that works for 10 minutes.</p>
+    </div>
+
+    <div class="panel">
+      <!-- Step 1: key -->
+      <form class="panel-inner" id="keyForm" novalidate>
+        <div class="field">
+          <label for="key">Your access key</label>
+          <input id="key" name="key" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="SNPQ-XXXX-XXXX-XXXX" maxlength="24" required aria-describedby="keyErr">
+        </div>
+        <p class="err" id="keyErr" role="alert"></p>
+        <button class="btn btn-lg" type="submit" id="checkBtn"><span class="spark">✦</span> Get my download</button>
+      </form>
+
+      <!-- Step 2: file ready -->
+      <div class="panel-inner" id="ready" hidden>
+        <div class="ok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5L20 7"/></svg><span>Key confirmed for <b id="owner"></b></span></div>
+        <div class="file">
+          <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 8v13H3V3h12l6 5z"/><path d="M12 11v6M9 14l3 3 3-3"/></svg></span>
+          <div><b id="fileName"></b><small id="fileMeta"></small></div>
+        </div>
+        <a class="btn btn-lg" id="dlBtn" href="#" download><span class="spark">✦</span> Download now</a>
+        <p class="timer" id="timer"></p>
+        <ol class="steps">
+          <li>Unzip the file into a folder on your computer.</li>
+          <li>Open Claude (Claude Code works best) and choose that folder.</li>
+          <li>Attach a raw video and describe what you want in one sentence.</li>
+        </ol>
+        <button class="link-btn" type="button" id="another">Use a different key</button>
+      </div>
+    </div>
+
+    <section class="help" aria-labelledby="lostTitle">
+      <h2 id="lostTitle">Lost your key?</h2>
+      <p>Enter the email you used to buy SnapQut and we'll send your key again.</p>
+      <form id="resendForm" novalidate>
+        <input id="resendEmail" type="email" autocomplete="email" placeholder="you@example.com" aria-label="Purchase email">
+        <button class="btn" type="submit">Resend my key</button>
+      </form>
+      <p class="msg" id="resendMsg" role="status"></p>
+      <p>Still stuck? Email <span class="sel">{{supportEmail}}</span> or WhatsApp <span class="sel">{{whatsapp}}</span>.</p>
+    </section>
+  </div>
+</main>
+
+<footer class="wrap">
+  <div class="footer-box">
+    <div class="footer-bottom" style="margin-top:0;padding-top:0;border-top:0"><span>© SnapQut. All rights reserved.</span><span><a href="/">Home</a> · <a href="/terms">Terms</a> · <a href="/privacy">Privacy</a> · <a href="/refund-policy">Refunds</a> · <a href="/contact">Contact</a></span></div>
+  </div>
+</footer>
+
+<script>
+(function () {
+  var form = document.getElementById('keyForm'), ready = document.getElementById('ready');
+  var input = document.getElementById('key'), err = document.getElementById('keyErr'), btn = document.getElementById('checkBtn'), btnHtml = btn.innerHTML;
+  var timerEl = document.getElementById('timer'), tick = null;
+
+  function post(url, data) {
+    return fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) })
+      .then(function (r) { return r.json().catch(function () { return {}; }).then(function (b) { if (!r.ok) throw new Error(b.error || 'Something went wrong. Please try again.'); return b; }); });
+  }
+  function size(n) { return n > 1e9 ? (n / 1e9).toFixed(2) + ' GB' : n > 1e6 ? (n / 1e6).toFixed(1) + ' MB' : Math.max(1, Math.round(n / 1e3)) + ' KB'; }
+  // Accept the key with or without dashes, any case
+  function tidy(v) {
+    var c = String(v || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+    if (c.indexOf('SNPQ') === 0) c = c.slice(4);
+    return c.length ? 'SNPQ-' + (c.match(/.{1,4}/g) || []).join('-') : '';
+  }
+
+  function showReady(r) {
+    document.getElementById('owner').textContent = r.issuedTo;
+    document.getElementById('fileName').textContent = r.fileName;
+    document.getElementById('fileMeta').textContent = 'Version ' + r.version + ' · ' + size(r.size) + (r.downloadsLeft != null ? ' · ' + r.downloadsLeft + ' download' + (r.downloadsLeft === 1 ? '' : 's') + ' left on this key' : '');
+    var a = document.getElementById('dlBtn'); a.href = r.url; a.setAttribute('download', r.fileName);
+    form.hidden = true; ready.hidden = false;
+    clearInterval(tick);
+    var end = Date.parse(r.expiresAt);
+    function update() {
+      var s = Math.max(0, Math.round((end - Date.now()) / 1000));
+      timerEl.textContent = s ? 'This link works for ' + Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0') + ' more minutes.' : 'This link has expired. Enter your key again for a new one.';
+      if (!s) { clearInterval(tick); a.removeAttribute('href'); a.style.opacity = '.5'; }
+    }
+    update(); tick = setInterval(update, 1000);
+  }
+
+  input.addEventListener('blur', function () { if (input.value) input.value = tidy(input.value); });
+  form.addEventListener('submit', function (e) {
+    e.preventDefault(); err.textContent = '';
+    var key = tidy(input.value); input.value = key;
+    if (!/^SNPQ-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$/.test(key)) { err.textContent = 'Keys look like SNPQ-XXXX-XXXX-XXXX. Copy it from your purchase email.'; input.focus(); return; }
+    btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Checking your key…';
+    post('/api/download', { key: key })
+      .then(showReady)
+      .catch(function (x) { err.textContent = x.message; })
+      .then(function () { btn.disabled = false; btn.innerHTML = btnHtml; });
+  });
+  document.getElementById('another').addEventListener('click', function () { clearInterval(tick); ready.hidden = true; form.hidden = false; input.value = ''; input.focus(); });
+
+  document.getElementById('resendForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var msg = document.getElementById('resendMsg'), em = document.getElementById('resendEmail').value.trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(em)) { msg.textContent = 'Enter the email you used when you bought SnapQut.'; return; }
+    msg.textContent = 'Sending…';
+    post('/api/resend-key', { email: em }).then(function (r) { msg.textContent = r.message; }).catch(function (x) { msg.textContent = x.message; });
+  });
+
+  // Key passed in the link from the purchase email (after #) fills itself in
+  if (location.hash.length > 1) {
+    var fromLink = tidy(decodeURIComponent(location.hash.slice(1)));
+    history.replaceState(null, '', location.pathname);
+    if (fromLink) { input.value = fromLink; form.requestSubmit ? form.requestSubmit() : form.dispatchEvent(new Event('submit')); }
+  }
+})();
+</script>
+</body>
+</html>

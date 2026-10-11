@@ -1,0 +1,318 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>SnapQut Admin</title>
+<link rel="icon" type="image/png" href="/assets/favicon.png">
+<link rel="stylesheet" href="/admin/static/admin.css">
+</head>
+<body>
+
+<!-- Login -->
+<main class="login" id="loginView" hidden>
+  <form class="login-card" id="loginForm" novalidate>
+    <img src="/assets/logo-light.png" alt="SnapQut" width="640" height="162">
+    <h1>Admin sign in</h1>
+    <p class="muted" id="loginNote">Sign in to see orders, edit the blog and update the site.</p>
+    <label class="field"><span>Email</span><input id="loginEmail" type="email" autocomplete="username" required></label>
+    <label class="field"><span>Password</span><input id="loginPassword" type="password" autocomplete="current-password" required></label>
+    <p class="err" id="loginErr" role="alert"></p>
+    <button class="btn primary" type="submit">Sign in</button>
+  </form>
+</main>
+
+<!-- App -->
+<div class="app" id="appView" hidden>
+  <aside class="side">
+    <img class="logo" src="/assets/logo-light.png" alt="SnapQut" width="640" height="162">
+    <nav class="tabs" aria-label="Admin sections">
+      <button type="button" data-tab="dashboard" class="on"><svg viewBox="0 0 24 24"><path d="M3 13h8V3H3zm10 8h8V11h-8zM3 21h8v-6H3zm10-18v6h8V3z"/></svg>Dashboard</button>
+      <button type="button" data-tab="orders"><svg viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h12"/></svg>Orders &amp; keys</button>
+      <button type="button" data-tab="kit"><svg viewBox="0 0 24 24"><path d="M21 8v13H3V3h12l6 5z"/><path d="M12 11v6M9 14l3 3 3-3"/></svg>Kit &amp; downloads</button>
+      <button type="button" data-tab="coupons"><svg viewBox="0 0 24 24"><path d="M3 9a2 2 0 0 0 0 6v3h18v-3a2 2 0 0 1 0-6V6H3zM9 9l6 6M9.5 15h.01M14.5 9h.01"/></svg>Discounts</button>
+      <button type="button" data-tab="blog"><svg viewBox="0 0 24 24"><path d="M4 4h16v16H4zM8 8h8M8 12h8M8 16h5"/></svg>Blog</button>
+      <button type="button" data-tab="site"><svg viewBox="0 0 24 24"><path d="M3 5h18v14H3zM3 9h18"/></svg>Site content</button>
+      <button type="button" data-tab="legal"><svg viewBox="0 0 24 24"><path d="M12 3v18M5 7h14M7 7l-3 7a3 3 0 0 0 6 0zM17 7l-3 7a3 3 0 0 0 6 0z"/></svg>Legal pages</button>
+      <button type="button" data-tab="email"><svg viewBox="0 0 24 24"><path d="M3 6h18v12H3zM3 6l9 7 9-7"/></svg>Emails</button>
+    </nav>
+    <div class="side-foot">
+      <div class="modes" id="modes"></div>
+      <a class="muted small" href="/" target="_blank" rel="noopener">View site ↗</a>
+      <button class="btn ghost small" type="button" id="logoutBtn">Sign out</button>
+    </div>
+  </aside>
+
+  <main class="main">
+    <!-- Dashboard -->
+    <section data-view="dashboard">
+      <header class="page-head"><h1>Dashboard</h1><p class="muted">Sales from the website. Test and manual orders are counted separately.</p></header>
+      <div id="dashBanner"></div>
+      <div class="kpis" id="kpis"></div>
+      <div class="card">
+        <div class="card-head"><h2>Sales, last 14 days</h2></div>
+        <div class="chart" id="chart"></div>
+      </div>
+      <div class="card">
+        <div class="card-head"><h2>Latest buyers</h2><button class="btn ghost small" type="button" data-goto="orders">All orders →</button></div>
+        <div class="table-wrap"><table class="table" id="recentTable"></table></div>
+      </div>
+    </section>
+
+    <!-- Orders -->
+    <section data-view="orders" hidden>
+      <header class="page-head row">
+        <div><h1>Orders &amp; keys</h1><p class="muted">Everyone who bought SnapQut, their key and whether the email went out.</p></div>
+        <div class="actions"><button class="btn ghost danger" type="button" id="deleteTestBtn">Delete test orders</button><button class="btn ghost" type="button" id="csvBtn">Export CSV</button><button class="btn primary" type="button" id="manualBtn">+ Issue a key</button></div>
+      </header>
+      <div class="filters">
+        <input type="search" id="orderSearch" placeholder="Search email, name, key or payment ID">
+        <select id="orderStatus" aria-label="Status"><option value="">All statuses</option><option value="paid">Paid</option><option value="created">Started, not paid</option><option value="failed">Failed</option></select>
+        <select id="orderSource" aria-label="Source"><option value="">All sources</option><option value="website">Website</option><option value="manual">Manual</option><option value="test">Test</option></select>
+      </div>
+      <div class="card flush"><div class="table-wrap"><table class="table" id="ordersTable"></table></div></div>
+      <div class="pager"><span class="muted small" id="ordersCount"></span><div><button class="btn ghost small" type="button" id="prevPage">← Newer</button> <button class="btn ghost small" type="button" id="nextPage">Older →</button></div></div>
+    </section>
+
+    <!-- Kit -->
+    <section data-view="kit" hidden>
+      <header class="page-head"><h1>Kit &amp; downloads</h1><p class="muted">The file buyers download from <a href="/download" target="_blank" rel="noopener">/download</a> after entering their key. It's never publicly linked.</p></header>
+      <div class="editor-grid">
+        <div class="card">
+          <div class="card-head"><h2>Kit file</h2><span id="kitState"></span></div>
+          <div class="kit-file" id="kitFile"></div>
+          <p class="muted small" id="kitWhere"></p>
+          <hr>
+          <h2>Upload a new version</h2>
+          <p class="muted small">Zip the kit folder without <code>node_modules</code>, <code>my-files</code>, <code>output</code>, <code>projects</code> and <code>transcripts</code>. Uploading replaces the current file for everyone straight away.</p>
+          <div class="grid-2">
+            <label class="field"><span>.zip file</span><input type="file" id="kitUpload" accept=".zip,application/zip"></label>
+            <label class="field"><span>Version</span><input id="kitUpVersion" placeholder="e.g. 1.1" maxlength="30"></label>
+          </div>
+          <div class="progress" id="kitProgress" hidden><i></i><span></span></div>
+          <p class="err" id="kitErr" role="alert"></p>
+          <div class="actions"><button class="btn primary" type="button" id="kitUploadBtn">Upload kit</button></div>
+          <div id="r2Existing" hidden>
+            <hr>
+            <h2>Already in your R2 bucket?</h2>
+            <p class="muted small">If you uploaded the zip another way (for example the Cloudflare dashboard or rclone), enter its path in the bucket to make it the live kit.</p>
+            <div class="inline"><input id="r2Key" placeholder="kits/SnapQut-1.0.zip" maxlength="300"><button class="btn ghost" type="button" id="r2UseBtn">Use this file</button></div>
+          </div>
+        </div>
+        <form class="card" id="kitSettings" novalidate>
+          <h2>Download rules</h2>
+          <label class="field"><span>Downloads allowed per key <small>0 = unlimited</small></span><input id="kitMax" type="number" min="0" max="1000"></label>
+          <label class="field"><span>File name buyers get</span><input id="kitName" maxlength="80" placeholder="SnapQut-1.0.zip"></label>
+          <label class="field"><span>Version shown on the download page</span><input id="kitVersion" maxlength="30"></label>
+          <p class="muted small">Each download link works for 10 minutes. Revoked keys can't download. If a buyer hits the limit, use <b>Reset downloads</b> on their order.</p>
+          <div class="actions"><button class="btn primary" type="submit">Save rules</button></div>
+        </form>
+      </div>
+      <div class="card flush">
+        <div class="card-head pad"><h2>Recent downloads</h2><span class="muted small" id="dlTotal"></span></div>
+        <div class="table-wrap"><table class="table" id="dlTable"></table></div>
+      </div>
+    </section>
+
+    <!-- Discounts -->
+    <section data-view="coupons" hidden>
+      <header class="page-head"><h1>Discounts</h1><p class="muted">Codes buyers can enter at checkout. Prices are always worked out on the server, so codes can't be faked.</p></header>
+      <form class="card" id="couponForm" novalidate>
+        <h2>New discount code</h2>
+        <div class="grid-3">
+          <label class="field"><span>Code</span><input id="cCode" maxlength="30" placeholder="LAUNCH20" style="text-transform:uppercase"></label>
+          <label class="field"><span>Type</span><select id="cKind" style="width:100%"><option value="percent">Percent off</option><option value="flat">Flat ₹ off</option></select></label>
+          <label class="field"><span>Value <small id="cValueHint">percent, 1–100</small></span><input id="cValue" type="number" min="1" placeholder="20"></label>
+        </div>
+        <div class="grid-3">
+          <label class="field"><span>Usage limit <small>0 = unlimited</small></span><input id="cMax" type="number" min="0" value="0"></label>
+          <label class="field"><span>Expires <small>last valid day, optional</small></span><input id="cExpires" type="date"></label>
+          <label class="field"><span>Note <small>only you see this</small></span><input id="cNote" maxlength="200" placeholder="e.g. Instagram launch post"></label>
+        </div>
+        <p class="muted small" id="cPreview"></p>
+        <p class="err" id="couponErr" role="alert"></p>
+        <div class="actions"><button class="btn primary" type="submit">Create code</button></div>
+      </form>
+      <div class="card flush"><div class="table-wrap"><table class="table" id="couponsTable"></table></div></div>
+    </section>
+
+    <!-- Legal pages -->
+    <section data-view="legal" hidden>
+      <form id="legalForm" novalidate>
+        <header class="page-head row">
+          <div><h1>Legal pages</h1><p class="muted">Required by Razorpay before live payments. These are starting templates: read them and adjust to how you actually run SnapQut.</p></div>
+          <div class="actions"><button class="btn primary" type="submit">Save pages</button></div>
+        </header>
+        <div class="card">
+          <h2>Business details</h2>
+          <div class="grid-2">
+            <label class="field"><span>Business or seller name <small>as on your Razorpay account</small></span><input id="lBusiness" maxlength="120"></label>
+            <label class="field"><span>Business address <small>shown on the Contact page</small></span><textarea id="lAddress" rows="2" maxlength="400"></textarea></label>
+          </div>
+          <p class="muted small">In the texts below you can use <code>{business}</code>, <code>{email}</code>, <code>{whatsapp}</code>, <code>{address}</code>, <code>{price}</code> and <code>{site}</code>. They're filled in automatically from your settings.</p>
+        </div>
+        <div class="card"><div class="card-head"><h2>Privacy policy</h2><a class="btn ghost small" href="/privacy" target="_blank" rel="noopener">View ↗</a></div><textarea id="lPrivacy" rows="14" class="mono"></textarea></div>
+        <div class="card"><div class="card-head"><h2>Terms of service</h2><a class="btn ghost small" href="/terms" target="_blank" rel="noopener">View ↗</a></div><textarea id="lTerms" rows="14" class="mono"></textarea></div>
+        <div class="card"><div class="card-head"><h2>Refund &amp; cancellation policy</h2><a class="btn ghost small" href="/refund-policy" target="_blank" rel="noopener">View ↗</a></div><textarea id="lRefund" rows="14" class="mono"></textarea></div>
+        <div class="card"><div class="card-head"><h2>Shipping &amp; delivery policy</h2><a class="btn ghost small" href="/shipping-policy" target="_blank" rel="noopener">View ↗</a></div><textarea id="lDelivery" rows="10" class="mono"></textarea></div>
+        <p class="muted small">The Contact page (<a href="/contact" target="_blank" rel="noopener">/contact</a>) is built from your support email, WhatsApp, business name and address.</p>
+        <p class="err" id="legalErr" role="alert"></p>
+      </form>
+    </section>
+
+    <!-- Blog -->
+    <section data-view="blog" hidden>
+      <div id="blogList">
+        <header class="page-head row">
+          <div><h1>Blog</h1><p class="muted">Write, edit and publish posts. Drafts are only visible to you.</p></div>
+          <div class="actions"><a class="btn ghost" href="/blog" target="_blank" rel="noopener">Open blog ↗</a><button class="btn primary" type="button" id="newPostBtn">+ New post</button></div>
+        </header>
+        <div class="card flush"><div class="table-wrap"><table class="table" id="postsTable"></table></div></div>
+      </div>
+
+      <form id="postEditor" hidden novalidate>
+        <header class="page-head row">
+          <div><button class="link" type="button" id="backToPosts">← All posts</button><h1 id="editorTitle">New post</h1></div>
+          <div class="actions">
+            <a class="btn ghost" id="viewPostLink" target="_blank" rel="noopener" hidden>View ↗</a>
+            <button class="btn danger ghost" type="button" id="deletePostBtn" hidden>Delete</button>
+            <button class="btn primary" type="submit">Save</button>
+          </div>
+        </header>
+        <div class="editor-grid">
+          <div class="card">
+            <label class="field"><span>Title</span><input id="pTitle" required maxlength="200"></label>
+            <label class="field"><span>Summary <small>shown on cards and under the title</small></span><textarea id="pDek" rows="2" maxlength="400"></textarea></label>
+            <div class="field">
+              <span class="label-row">Body <small>Markdown. Use <code>```prompt</code> blocks for “You type” boxes and <code>&gt;</code> for callouts.</small><span class="seg"><button type="button" class="on" id="writeTab">Write</button><button type="button" id="previewTab">Preview</button></span></span>
+              <textarea id="pBody" rows="26" class="mono"></textarea>
+              <div class="preview prose" id="pPreview" hidden></div>
+            </div>
+          </div>
+          <div class="stack">
+            <div class="card">
+              <label class="switch"><input type="checkbox" id="pPublished"><span>Published</span></label>
+              <label class="switch"><input type="checkbox" id="pFeatured"><span>Featured on the blog page</span></label>
+              <label class="field"><span>URL slug</span><div class="prefix"><em>/blog/</em><input id="pSlug" maxlength="80"></div></label>
+              <label class="field"><span>Topic</span><input id="pCategory" list="cats" maxlength="40"><datalist id="cats"><option>Guides</option><option>Captions</option><option>Style</option><option>Ads</option></datalist></label>
+              <label class="field"><span>Read time <small>minutes, leave empty to estimate</small></span><input id="pMins" type="number" min="1" max="60"></label>
+            </div>
+            <div class="card">
+              <span class="label-row">Cover images <small>pick up to 3</small></span>
+              <div class="chosen" id="coverChosen"></div>
+              <div class="media-grid" id="mediaGrid"></div>
+              <label class="btn ghost small upload">Upload image<input type="file" id="mediaUpload" accept="image/png,image/jpeg,image/webp" hidden></label>
+            </div>
+          </div>
+        </div>
+        <p class="err" id="postErr" role="alert"></p>
+      </form>
+    </section>
+
+    <!-- Site content -->
+    <section data-view="site" hidden>
+      <form id="siteForm" novalidate>
+        <header class="page-head row">
+          <div><h1>Site content</h1><p class="muted">Changes go live on the homepage, checkout and blog as soon as you save.</p></div>
+          <div class="actions"><a class="btn ghost" href="/" target="_blank" rel="noopener">Open site ↗</a><button class="btn primary" type="submit">Save changes</button></div>
+        </header>
+        <div class="card">
+          <h2>Hero</h2>
+          <label class="field"><span>Headline</span><input id="sHeroTitle" maxlength="200"></label>
+          <label class="field"><span>Highlighted words <small>shown in violet after the headline</small></span><input id="sHeroHighlight" maxlength="200"></label>
+          <label class="field"><span>Intro paragraph</span><textarea id="sHeroLead" rows="3" maxlength="600"></textarea></label>
+        </div>
+        <div class="card">
+          <h2>Pricing</h2>
+          <div class="grid-3">
+            <label class="field"><span>Price (₹)</span><input id="sPrice" type="number" min="1"></label>
+            <label class="field"><span>Crossed-out price (₹) <small>0 to hide</small></span><input id="sCompare" type="number" min="0"></label>
+            <label class="field"><span>Price notice</span><input id="sNotice" maxlength="200"></label>
+          </div>
+        </div>
+        <div class="card">
+          <h2>Contact</h2>
+          <div class="grid-2">
+            <label class="field"><span>Support email</span><input id="sSupport" maxlength="200"></label>
+            <label class="field"><span>WhatsApp</span><input id="sWhatsapp" maxlength="60"></label>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-head"><h2>FAQ</h2><button class="btn ghost small" type="button" id="addFaq">+ Add question</button></div>
+          <div class="repeater" id="faqList"></div>
+        </div>
+        <div class="card">
+          <div class="card-head"><h2>Reviews</h2><button class="btn ghost small" type="button" id="addReview">+ Add review</button></div>
+          <div class="repeater" id="reviewList"></div>
+        </div>
+        <p class="err" id="siteErr" role="alert"></p>
+      </form>
+    </section>
+
+    <!-- Email -->
+    <section data-view="email" hidden>
+      <header class="page-head"><h1>Emails</h1><p class="muted">The licence email every buyer receives, and a log of everything sent.</p></header>
+      <div class="editor-grid">
+        <form class="card" id="emailForm" novalidate>
+          <h2>Licence email</h2>
+          <div class="grid-2">
+            <label class="field"><span>From name</span><input id="eFromName" maxlength="80"></label>
+            <label class="field"><span>From address <small>must be on your verified Resend domain</small></span><input id="eFrom" maxlength="200"></label>
+          </div>
+          <div class="grid-2">
+            <label class="field"><span>Reply-to</span><input id="eReply" maxlength="200"></label>
+            <label class="field"><span>Subject</span><input id="eSubject" maxlength="200"></label>
+          </div>
+          <p class="muted small">The email's <b>Download SnapQut</b> button opens your download page with the buyer's key filled in. Upload the kit in <b>Kit &amp; downloads</b>.</p>
+          <label class="field"><span>Setup steps <small>one step per line</small></span><textarea id="eSteps" rows="6" maxlength="4000"></textarea></label>
+          <p class="err" id="emailErr" role="alert"></p>
+          <div class="actions"><button class="btn primary" type="submit">Save email</button></div>
+          <hr>
+          <h2>Send a test</h2>
+          <div class="inline"><input id="testTo" type="email" placeholder="you@example.com"><button class="btn ghost" type="button" id="sendTest">Send test email</button></div>
+          <p class="muted small" id="testResult"></p>
+        </form>
+        <div class="card">
+          <div class="card-head"><h2>Preview</h2><button class="btn ghost small" type="button" id="refreshPreview">Refresh</button></div>
+          <iframe class="mail-preview" id="mailPreview" title="Email preview" sandbox="allow-same-origin"></iframe>
+        </div>
+      </div>
+      <div class="card flush">
+        <div class="card-head pad"><h2>Sent emails</h2></div>
+        <div class="table-wrap"><table class="table" id="emailLog"></table></div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- Modals -->
+<dialog class="modal" id="manualModal">
+  <form method="dialog" id="manualForm" novalidate>
+    <h2>Issue a key manually</h2>
+    <p class="muted small">For gifts, refunds re-issued, or payments taken outside the site.</p>
+    <label class="field"><span>Name</span><input id="mName" maxlength="100"></label>
+    <label class="field"><span>Email</span><input id="mEmail" type="email" required></label>
+    <label class="field"><span>Amount received (₹) <small>0 for a free key</small></span><input id="mAmount" type="number" min="0" value="0"></label>
+    <label class="field"><span>Note</span><input id="mNote" maxlength="500" placeholder="e.g. Paid by UPI on 12 Oct"></label>
+    <label class="switch"><input type="checkbox" id="mSend" checked><span>Email the key to them now</span></label>
+    <p class="err" id="manualErr" role="alert"></p>
+    <div class="actions"><button class="btn ghost" type="button" value="cancel" id="manualCancel">Cancel</button><button class="btn primary" type="submit">Issue key</button></div>
+  </form>
+</dialog>
+
+<dialog class="modal wide" id="orderModal">
+  <div class="card-head"><h2 id="odTitle">Order</h2><button class="btn ghost small" type="button" id="odClose">Close</button></div>
+  <div id="odBody" class="od"></div>
+</dialog>
+
+<dialog class="modal wide" id="mailModal">
+  <div class="card-head"><h2>Email</h2><button class="btn ghost small" type="button" id="mailClose">Close</button></div>
+  <iframe class="mail-preview" id="mailModalFrame" title="Sent email" sandbox="allow-same-origin"></iframe>
+</dialog>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="/admin/static/admin.js"></script>
+</body>
+</html>
